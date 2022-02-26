@@ -1,0 +1,17 @@
+.error , #notice {
+    font-size:13px;
+    font-style: italic;
+    color: red;
+}
+.footer{
+    margin-bottom: 10px;
+    padding: 10px;
+    font-style: italic;
+    color:rgb(45, 128, 206)
+}
+.main{
+    padding: 10px;
+    margin-bottom: 10px;
+    height: responsive;
+    margin-right: 10px;
+}

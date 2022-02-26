@@ -1,0 +1,1359 @@
+
+
+var web3js;
+var mainInstance;
+var accounts=[];
+var currentAccount;
+const $notice = document.getElementById('notice');
+var admin;
+var sesInstanceAr=[]
+//Main Abi & Address
+const contractAbiMain = [
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "lastPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "CloseSession",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "proposedPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "ProposedPrice",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "email",
+				"type": "string"
+			}
+		],
+		"name": "Register",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "email",
+				"type": "string"
+			}
+		],
+		"name": "UpdateInfo",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "Iparticipants",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "participantID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "email",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "deviation",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "deviationNew",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "sessionNumber",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "addr",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_session",
+				"type": "address"
+			}
+		],
+		"name": "addSession",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "admin",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_session",
+				"type": "address"
+			}
+		],
+		"name": "calculateLastPrice",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "count",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getAdminInfo",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_session",
+				"type": "address"
+			}
+		],
+		"name": "getGivenPrices",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_session",
+				"type": "address"
+			}
+		],
+		"name": "getLastPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_session",
+				"type": "address"
+			}
+		],
+		"name": "getListOfPar",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "getProfileAdd",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "getProfileId",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_session",
+				"type": "address"
+			}
+		],
+		"name": "getProposedPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getSessionNum",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getSessions",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_session",
+				"type": "address"
+			}
+		],
+		"name": "getStatusSession",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getTotalParNum",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "participants",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "participantID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "email",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "deviation",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "deviationNew",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "sessionNumber",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "addr",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_session",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_price",
+				"type": "uint256"
+			}
+		],
+		"name": "price",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_email",
+				"type": "string"
+			}
+		],
+		"name": "register",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "sessions",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_session",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_status",
+				"type": "uint256"
+			}
+		],
+		"name": "statusSession",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_newName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_newEmail",
+				"type": "string"
+			}
+		],
+		"name": "update",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
+const mainAddress = "0x8A95a4352D80df8fBC4aE94Fbd74DC931F184531"
+
+//Session Abi & bycode
+const sessAbi = [
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_mainContract",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_admin",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "_itemName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_description",
+				"type": "string"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "admin",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getGivenPrices",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getHash",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getListOfPar",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getPriceAndClose",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getProductInfo",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getProposedPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getStatusSession",
+		"outputs": [
+			{
+				"internalType": "enum Session.State",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "givenPrices",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "imageHashes",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "item",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "itemID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "itemName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "lastPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "mainContract",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "participants",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "proposedPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_imageHash",
+				"type": "address"
+			}
+		],
+		"name": "setHash",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "setIdSession",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "startSession",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "state",
+		"outputs": [
+			{
+				"internalType": "enum Session.State",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "stopSession",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_newItemId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_newName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_newDescription",
+				"type": "string"
+			}
+		],
+		"name": "updateProductInfo",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
+const byteCode = {
+	"linkReferences": {},
+	"object": "60806040526000600860006101000a81548160ff021916908360038111156200002457fe5b02179055503480156200003657600080fd5b506040516200289f3803806200289f833981810160405260808110156200005c57600080fd5b810190808051906020019092919080519060200190929190805160405193929190846401000000008211156200009157600080fd5b83820191506020820185811115620000a857600080fd5b8251866001820283011164010000000082111715620000c657600080fd5b8083526020830192505050908051906020019080838360005b83811015620000fc578082015181840152602081019050620000df565b50505050905090810190601f1680156200012a5780820380516001836020036101000a031916815260200191505b50604052602001805160405193929190846401000000008211156200014e57600080fd5b838201915060208201858111156200016557600080fd5b82518660018202830111640100000000821117156200018357600080fd5b8083526020830192505050908051906020019080838360005b83811015620001b95780820151818401526020810190506200019c565b50505050905090810190601f168015620001e75780820380516001836020036101000a031916815260200191505b50604052505050836000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555083600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16634e2ce5b46040518163ffffffff1660e01b815260040160206040518083038186803b158015620002d857600080fd5b505afa158015620002ed573d6000803e3d6000fd5b505050506040513d60208110156200030457600080fd5b81019080805190602001909291905050506003600001819055508160036001019080519060200190620003399291906200045c565b508060036002019080519060200190620003559291906200045c565b5082600260006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663f390dd86306040518263ffffffff1660e01b8152600401808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001915050600060405180830381600087803b1580156200043957600080fd5b505af11580156200044e573d6000803e3d6000fd5b50505050505050506200050b565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106200049f57805160ff1916838001178555620004d0565b82800160010185558215620004d0579182015b82811115620004cf578251825591602001919060010190620004b2565b5b509050620004df9190620004e3565b5090565b6200050891905b8082111562000504576000816000905550600101620004ea565b5090565b90565b612384806200051b6000396000f3fe608060405234801561001057600080fd5b50600436106101375760003560e01c8063a8d4ab6c116100b8578063d35d10b31161007c578063d35d10b314610476578063e3635bfd146105d2578063f2a4a82e146105f0578063f851a440146106e6578063fc72a38514610730578063fe0ae1651461082657610137565b8063a8d4ab6c14610329578063c19d93fb14610397578063cbd8c613146103c3578063d13319c4146103cd578063d270e7ab1461042c57610137565b80633638d677116100ff5780633638d6771461024f5780633ac704711461026d578063474322c01461027757806372d9f63a146102a3578063a797712e146102e757610137565b8063031a65581461013c578063053f14da1461015a5780631bc1023e14610178578063316c2261146101d757806335c1d349146101e1575b600080fd5b610144610830565b6040518082815260200191505060405180910390f35b610162610a7c565b6040518082815260200191505060405180910390f35b610180610a82565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b838110156101c35780820151818401526020810190506101a8565b505050509050019250505060405180910390f35b6101df610d5f565b005b61020d600480360360208110156101f757600080fd5b8101908080359060200190929190505050610e0d565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b610257610e49565b6040518082815260200191505060405180910390f35b61027561117b565b005b61027f6113cc565b6040518082600381111561028f57fe5b60ff16815260200191505060405180910390f35b6102e5600480360360208110156102b957600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506113e3565b005b610313600480360360208110156102fd57600080fd5b810190808035906020019092919050505061150c565b6040518082815260200191505060405180910390f35b6103556004803603602081101561033f57600080fd5b810190808035906020019092919050505061152d565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b61039f611569565b604051808260038111156103af57fe5b60ff16815260200191505060405180910390f35b6103cb61157c565b005b6103d561187d565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b838110156104185780820151818401526020810190506103fd565b505050509050019250505060405180910390f35b61043461190b565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6105d06004803603606081101561048c57600080fd5b8101908080359060200190929190803590602001906401000000008111156104b357600080fd5b8201836020820111156104c557600080fd5b803590602001918460018302840111640100000000831117156104e757600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561054a57600080fd5b82018360208201111561055c57600080fd5b8035906020019184600183028401116401000000008311171561057e57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f820116905080830192505050505050509192919290505050611930565b005b6105da611c7b565b6040518082815260200191505060405180910390f35b6105f8611c81565b604051808481526020018060200180602001838103835285818151815260200191508051906020019080838360005b83811015610642578082015181840152602081019050610627565b50505050905090810190601f16801561066f5780820380516001836020036101000a031916815260200191505b50838103825284818151815260200191508051906020019080838360005b838110156106a857808201518184015260208101905061068d565b50505050905090810190601f1680156106d55780820380516001836020036101000a031916815260200191505b509550505050505060405180910390f35b6106ee611dc9565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b610738611def565b604051808481526020018060200180602001838103835285818151815260200191508051906020019080838360005b83811015610782578082015181840152602081019050610767565b50505050905090810190601f1680156107af5780820380516001836020036101000a031916815260200191505b50838103825284818151815260200191508051906020019080838360005b838110156107e85780820151818401526020810190506107cd565b50505050905090810190601f1680156108155780820380516001836020036101000a031916815260200191505b509550505050505060405180910390f35b61082e611f47565b005b6000600180600381111561084057fe5b600860009054906101000a900460ff16600381111561085b57fe5b146108ce576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600d8152602001807f496e76616c69642073746174650000000000000000000000000000000000000081525060200191505060405180910390fd5b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614610991576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f4f6e6c792041646d696e2063616e2063616c6c2074686973000000000000000081525060200191505060405180910390fd5b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166345504805306040518263ffffffff1660e01b8152600401808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001915050602060405180830381600087803b158015610a3257600080fd5b505af1158015610a46573d6000803e3d6000fd5b505050506040513d6020811015610a5c57600080fd5b810190808051906020019092919050505060068190555060065491505090565b60075481565b6060600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614610b47576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f4f6e6c792041646d696e2063616e2063616c6c2074686973000000000000000081525060200191505060405180910390fd5b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16634188b458306040518263ffffffff1660e01b8152600401808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001915050600060405180830381600087803b158015610be857600080fd5b505af1158015610bfc573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f820116820180604052506020811015610c2657600080fd5b8101908080516040519392919084640100000000821115610c4657600080fd5b83820191506020820185811115610c5c57600080fd5b8251866020820283011164010000000082111715610c7957600080fd5b8083526020830192505050908051906020019060200280838360005b83811015610cb0578082015181840152602081019050610c95565b5050505090500160405250505060099080519060200190610cd292919061218f565b506009805480602002602001604051908101604052809291908181526020018280548015610d5557602002820191906000526020600020905b8160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019060010190808311610d0b575b5050505050905090565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16634e2ce5b46040518163ffffffff1660e01b815260040160206040518083038186803b158015610dc757600080fd5b505afa158015610ddb573d6000803e3d6000fd5b505050506040513d6020811015610df157600080fd5b8101908080519060200190929190505050600360000181905550565b60098181548110610e1a57fe5b906000526020600020016000915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60006002806003811115610e5957fe5b600860009054906101000a900460ff166003811115610e7457fe5b14610ee7576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600d8152602001807f496e76616c69642073746174650000000000000000000000000000000000000081525060200191505060405180910390fd5b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614610faa576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f4f6e6c792041646d696e2063616e2063616c6c2074686973000000000000000081525060200191505060405180910390fd5b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663deeb3e703060036040518363ffffffff1660e01b8152600401808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200182815260200192505050600060405180830381600087803b15801561105457600080fd5b505af1158015611068573d6000803e3d6000fd5b505050506003600860006101000a81548160ff0219169083600381111561108b57fe5b0217905550600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c692fc74306040518263ffffffff1660e01b8152600401808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001915050602060405180830381600087803b15801561113157600080fd5b505af1158015611145573d6000803e3d6000fd5b505050506040513d602081101561115b57600080fd5b810190808051906020019092919050505060078190555060075491505090565b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161461123e576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f4f6e6c792041646d696e2063616e2063616c6c2074686973000000000000000081525060200191505060405180910390fd5b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166327eaba5a306040518263ffffffff1660e01b8152600401808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001915050600060405180830381600087803b1580156112df57600080fd5b505af11580156112f3573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f82011682018060405250602081101561131d57600080fd5b810190808051604051939291908464010000000082111561133d57600080fd5b8382019150602082018581111561135357600080fd5b825186602082028301116401000000008211171561137057600080fd5b8083526020830192505050908051906020019060200280838360005b838110156113a757808201518184015260208101905061138c565b50505050905001604052505050600a90805190602001906113c9929190612219565b50565b6000600860009054906101000a900460ff16905090565b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146114a6576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f4f6e6c792041646d696e2063616e2063616c6c2074686973000000000000000081525060200191505060405180910390fd5b600b819080600181540180825580915050600190039060005260206000200160009091909190916101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b600a818154811061151957fe5b906000526020600020016000915090505481565b600b818154811061153a57fe5b906000526020600020016000915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600860009054906101000a900460ff1681565b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161461163f576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f4f6e6c792041646d696e2063616e2063616c6c2074686973000000000000000081525060200191505060405180910390fd5b600180600381111561164d57fe5b600860009054906101000a900460ff16600381111561166857fe5b146116db576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600d8152602001807f496e76616c69642073746174650000000000000000000000000000000000000081525060200191505060405180910390fd5b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663deeb3e703060026040518363ffffffff1660e01b8152600401808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200182815260200192505050600060405180830381600087803b15801561178557600080fd5b505af1158015611799573d6000803e3d6000fd5b505050506002600860006101000a81548160ff021916908360038111156117bc57fe5b0217905550600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16636bc03cf0306040518263ffffffff1660e01b8152600401808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001915050600060405180830381600087803b15801561186257600080fd5b505af1158015611876573d6000803e3d6000fd5b5050505050565b6060600b80548060200260200160405190810160405280929190818152602001828054801561190157602002820191906000526020600020905b8160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190600101908083116118b7575b5050505050905090565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146119f3576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f4f6e6c792041646d696e2063616e2063616c6c2074686973000000000000000081525060200191505060405180910390fd5b600360000154604051602001808281526020019150506040516020818303038152906040528051906020012083604051602001808281526020019150506040516020818303038152906040528051906020012014611a5657826003600001819055505b60036001016040516020018082805460018160011615610100020316600290048015611ab95780601f10611a97576101008083540402835291820191611ab9565b820191906000526020600020905b815481529060010190602001808311611aa5575b505091505060405160208183030381529060405280519060200120826040516020018082805190602001908083835b60208310611b0b5780518252602082019150602081019050602083039250611ae8565b6001836020036101000a0380198251168184511680821785525050505050509050019150506040516020818303038152906040528051906020012014611b66578160036001019080519060200190611b64929190612266565b505b60036002016040516020018082805460018160011615610100020316600290048015611bc95780601f10611ba7576101008083540402835291820191611bc9565b820191906000526020600020905b815481529060010190602001808311611bb5575b505091505060405160208183030381529060405280519060200120816040516020018082805190602001908083835b60208310611c1b5780518252602082019150602081019050602083039250611bf8565b6001836020036101000a0380198251168184511680821785525050505050509050019150506040516020818303038152906040528051906020012014611c76578060036002019080519060200190611c74929190612266565b505b505050565b60065481565b6003806000015490806001018054600181600116156101000203166002900480601f016020809104026020016040519081016040528092919081815260200182805460018160011615610100020316600290048015611d215780601f10611cf657610100808354040283529160200191611d21565b820191906000526020600020905b815481529060010190602001808311611d0457829003601f168201915b505050505090806002018054600181600116156101000203166002900480601f016020809104026020016040519081016040528092919081815260200182805460018160011615610100020316600290048015611dbf5780601f10611d9457610100808354040283529160200191611dbf565b820191906000526020600020905b815481529060010190602001808311611da257829003601f168201915b5050505050905083565b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600060608060036000015460036001016003600201818054600181600116156101000203166002900480601f016020809104026020016040519081016040528092919081815260200182805460018160011615610100020316600290048015611e995780601f10611e6e57610100808354040283529160200191611e99565b820191906000526020600020905b815481529060010190602001808311611e7c57829003601f168201915b50505050509150808054600181600116156101000203166002900480601f016020809104026020016040519081016040528092919081815260200182805460018160011615610100020316600290048015611f355780601f10611f0a57610100808354040283529160200191611f35565b820191906000526020600020905b815481529060010190602001808311611f1857829003601f168201915b50505050509050925092509250909192565b6000806003811115611f5557fe5b600860009054906101000a900460ff166003811115611f7057fe5b14611fe3576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600d8152602001807f496e76616c69642073746174650000000000000000000000000000000000000081525060200191505060405180910390fd5b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146120a6576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f4f6e6c792041646d696e2063616e2063616c6c2074686973000000000000000081525060200191505060405180910390fd5b6001600860006101000a81548160ff021916908360038111156120c557fe5b0217905550600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663deeb3e703060016040518363ffffffff1660e01b8152600401808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200182815260200192505050600060405180830381600087803b15801561217457600080fd5b505af1158015612188573d6000803e3d6000fd5b5050505050565b828054828255906000526020600020908101928215612208579160200282015b828111156122075782518260006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550916020019190600101906121af565b5b50905061221591906122e6565b5090565b828054828255906000526020600020908101928215612255579160200282015b82811115612254578251825591602001919060010190612239565b5b5090506122629190612329565b5090565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106122a757805160ff19168380011785556122d5565b828001600101855582156122d5579182015b828111156122d45782518255916020019190600101906122b9565b5b5090506122e29190612329565b5090565b61232691905b8082111561232257600081816101000a81549073ffffffffffffffffffffffffffffffffffffffff0219169055506001016122ec565b5090565b90565b61234b91905b8082111561234757600081600090555060010161232f565b5090565b9056fea2646970667358221220935abebce5aee208ac94af48535856ce3d56d94f76fe72c9cd9c312c2124148264736f6c63430006000033",
+	"opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE PUSH1 0x0 PUSH1 0x8 PUSH1 0x0 PUSH2 0x100 EXP DUP2 SLOAD DUP2 PUSH1 0xFF MUL NOT AND SWAP1 DUP4 PUSH1 0x3 DUP2 GT ISZERO PUSH3 0x24 JUMPI INVALID JUMPDEST MUL OR SWAP1 SSTORE POP CALLVALUE DUP1 ISZERO PUSH3 0x36 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x40 MLOAD PUSH3 0x289F CODESIZE SUB DUP1 PUSH3 0x289F DUP4 CODECOPY DUP2 DUP2 ADD PUSH1 0x40 MSTORE PUSH1 0x80 DUP2 LT ISZERO PUSH3 0x5C JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 DUP1 MLOAD PUSH1 0x40 MLOAD SWAP4 SWAP3 SWAP2 SWAP1 DUP5 PUSH5 0x100000000 DUP3 GT ISZERO PUSH3 0x91 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP4 DUP3 ADD SWAP2 POP PUSH1 0x20 DUP3 ADD DUP6 DUP2 GT ISZERO PUSH3 0xA8 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP3 MLOAD DUP7 PUSH1 0x1 DUP3 MUL DUP4 ADD GT PUSH5 0x100000000 DUP3 GT OR ISZERO PUSH3 0xC6 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP1 DUP4 MSTORE PUSH1 0x20 DUP4 ADD SWAP3 POP POP POP SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 DUP1 DUP4 DUP4 PUSH1 0x0 JUMPDEST DUP4 DUP2 LT ISZERO PUSH3 0xFC JUMPI DUP1 DUP3 ADD MLOAD DUP2 DUP5 ADD MSTORE PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH3 0xDF JUMP JUMPDEST POP POP POP POP SWAP1 POP SWAP1 DUP2 ADD SWAP1 PUSH1 0x1F AND DUP1 ISZERO PUSH3 0x12A JUMPI DUP1 DUP3 SUB DUP1 MLOAD PUSH1 0x1 DUP4 PUSH1 0x20 SUB PUSH2 0x100 EXP SUB NOT AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP JUMPDEST POP PUSH1 0x40 MSTORE PUSH1 0x20 ADD DUP1 MLOAD PUSH1 0x40 MLOAD SWAP4 SWAP3 SWAP2 SWAP1 DUP5 PUSH5 0x100000000 DUP3 GT ISZERO PUSH3 0x14E JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP4 DUP3 ADD SWAP2 POP PUSH1 0x20 DUP3 ADD DUP6 DUP2 GT ISZERO PUSH3 0x165 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP3 MLOAD DUP7 PUSH1 0x1 DUP3 MUL DUP4 ADD GT PUSH5 0x100000000 DUP3 GT OR ISZERO PUSH3 0x183 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP1 DUP4 MSTORE PUSH1 0x20 DUP4 ADD SWAP3 POP POP POP SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 DUP1 DUP4 DUP4 PUSH1 0x0 JUMPDEST DUP4 DUP2 LT ISZERO PUSH3 0x1B9 JUMPI DUP1 DUP3 ADD MLOAD DUP2 DUP5 ADD MSTORE PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH3 0x19C JUMP JUMPDEST POP POP POP POP SWAP1 POP SWAP1 DUP2 ADD SWAP1 PUSH1 0x1F AND DUP1 ISZERO PUSH3 0x1E7 JUMPI DUP1 DUP3 SUB DUP1 MLOAD PUSH1 0x1 DUP4 PUSH1 0x20 SUB PUSH2 0x100 EXP SUB NOT AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP JUMPDEST POP PUSH1 0x40 MSTORE POP POP POP DUP4 PUSH1 0x0 DUP1 PUSH2 0x100 EXP DUP2 SLOAD DUP2 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF MUL NOT AND SWAP1 DUP4 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND MUL OR SWAP1 SSTORE POP DUP4 PUSH1 0x1 PUSH1 0x0 PUSH2 0x100 EXP DUP2 SLOAD DUP2 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF MUL NOT AND SWAP1 DUP4 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND MUL OR SWAP1 SSTORE POP PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0x4E2CE5B4 PUSH1 0x40 MLOAD DUP2 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD PUSH1 0x20 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 DUP7 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH3 0x2D8 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS STATICCALL ISZERO DUP1 ISZERO PUSH3 0x2ED JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP PUSH1 0x40 MLOAD RETURNDATASIZE PUSH1 0x20 DUP2 LT ISZERO PUSH3 0x304 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 POP POP POP PUSH1 0x3 PUSH1 0x0 ADD DUP2 SWAP1 SSTORE POP DUP2 PUSH1 0x3 PUSH1 0x1 ADD SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH3 0x339 SWAP3 SWAP2 SWAP1 PUSH3 0x45C JUMP JUMPDEST POP DUP1 PUSH1 0x3 PUSH1 0x2 ADD SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH3 0x355 SWAP3 SWAP2 SWAP1 PUSH3 0x45C JUMP JUMPDEST POP DUP3 PUSH1 0x2 PUSH1 0x0 PUSH2 0x100 EXP DUP2 SLOAD DUP2 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF MUL NOT AND SWAP1 DUP4 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND MUL OR SWAP1 SSTORE POP PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0xF390DD86 ADDRESS PUSH1 0x40 MLOAD DUP3 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP3 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x0 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH3 0x439 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH3 0x44E JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP POP POP POP POP PUSH3 0x50B JUMP JUMPDEST DUP3 DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 PUSH1 0x1F ADD PUSH1 0x20 SWAP1 DIV DUP2 ADD SWAP3 DUP3 PUSH1 0x1F LT PUSH3 0x49F JUMPI DUP1 MLOAD PUSH1 0xFF NOT AND DUP4 DUP1 ADD OR DUP6 SSTORE PUSH3 0x4D0 JUMP JUMPDEST DUP3 DUP1 ADD PUSH1 0x1 ADD DUP6 SSTORE DUP3 ISZERO PUSH3 0x4D0 JUMPI SWAP2 DUP3 ADD JUMPDEST DUP3 DUP2 GT ISZERO PUSH3 0x4CF JUMPI DUP3 MLOAD DUP3 SSTORE SWAP2 PUSH1 0x20 ADD SWAP2 SWAP1 PUSH1 0x1 ADD SWAP1 PUSH3 0x4B2 JUMP JUMPDEST JUMPDEST POP SWAP1 POP PUSH3 0x4DF SWAP2 SWAP1 PUSH3 0x4E3 JUMP JUMPDEST POP SWAP1 JUMP JUMPDEST PUSH3 0x508 SWAP2 SWAP1 JUMPDEST DUP1 DUP3 GT ISZERO PUSH3 0x504 JUMPI PUSH1 0x0 DUP2 PUSH1 0x0 SWAP1 SSTORE POP PUSH1 0x1 ADD PUSH3 0x4EA JUMP JUMPDEST POP SWAP1 JUMP JUMPDEST SWAP1 JUMP JUMPDEST PUSH2 0x2384 DUP1 PUSH3 0x51B PUSH1 0x0 CODECOPY PUSH1 0x0 RETURN INVALID PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0x10 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x4 CALLDATASIZE LT PUSH2 0x137 JUMPI PUSH1 0x0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0xA8D4AB6C GT PUSH2 0xB8 JUMPI DUP1 PUSH4 0xD35D10B3 GT PUSH2 0x7C JUMPI DUP1 PUSH4 0xD35D10B3 EQ PUSH2 0x476 JUMPI DUP1 PUSH4 0xE3635BFD EQ PUSH2 0x5D2 JUMPI DUP1 PUSH4 0xF2A4A82E EQ PUSH2 0x5F0 JUMPI DUP1 PUSH4 0xF851A440 EQ PUSH2 0x6E6 JUMPI DUP1 PUSH4 0xFC72A385 EQ PUSH2 0x730 JUMPI DUP1 PUSH4 0xFE0AE165 EQ PUSH2 0x826 JUMPI PUSH2 0x137 JUMP JUMPDEST DUP1 PUSH4 0xA8D4AB6C EQ PUSH2 0x329 JUMPI DUP1 PUSH4 0xC19D93FB EQ PUSH2 0x397 JUMPI DUP1 PUSH4 0xCBD8C613 EQ PUSH2 0x3C3 JUMPI DUP1 PUSH4 0xD13319C4 EQ PUSH2 0x3CD JUMPI DUP1 PUSH4 0xD270E7AB EQ PUSH2 0x42C JUMPI PUSH2 0x137 JUMP JUMPDEST DUP1 PUSH4 0x3638D677 GT PUSH2 0xFF JUMPI DUP1 PUSH4 0x3638D677 EQ PUSH2 0x24F JUMPI DUP1 PUSH4 0x3AC70471 EQ PUSH2 0x26D JUMPI DUP1 PUSH4 0x474322C0 EQ PUSH2 0x277 JUMPI DUP1 PUSH4 0x72D9F63A EQ PUSH2 0x2A3 JUMPI DUP1 PUSH4 0xA797712E EQ PUSH2 0x2E7 JUMPI PUSH2 0x137 JUMP JUMPDEST DUP1 PUSH4 0x31A6558 EQ PUSH2 0x13C JUMPI DUP1 PUSH4 0x53F14DA EQ PUSH2 0x15A JUMPI DUP1 PUSH4 0x1BC1023E EQ PUSH2 0x178 JUMPI DUP1 PUSH4 0x316C2261 EQ PUSH2 0x1D7 JUMPI DUP1 PUSH4 0x35C1D349 EQ PUSH2 0x1E1 JUMPI JUMPDEST PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0x144 PUSH2 0x830 JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x162 PUSH2 0xA7C JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x180 PUSH2 0xA82 JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE DUP4 DUP2 DUP2 MLOAD DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH1 0x20 MUL DUP1 DUP4 DUP4 PUSH1 0x0 JUMPDEST DUP4 DUP2 LT ISZERO PUSH2 0x1C3 JUMPI DUP1 DUP3 ADD MLOAD DUP2 DUP5 ADD MSTORE PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH2 0x1A8 JUMP JUMPDEST POP POP POP POP SWAP1 POP ADD SWAP3 POP POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x1DF PUSH2 0xD5F JUMP JUMPDEST STOP JUMPDEST PUSH2 0x20D PUSH1 0x4 DUP1 CALLDATASIZE SUB PUSH1 0x20 DUP2 LT ISZERO PUSH2 0x1F7 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 CALLDATALOAD SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 POP POP POP PUSH2 0xE0D JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x257 PUSH2 0xE49 JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x275 PUSH2 0x117B JUMP JUMPDEST STOP JUMPDEST PUSH2 0x27F PUSH2 0x13CC JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x28F JUMPI INVALID JUMPDEST PUSH1 0xFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x2E5 PUSH1 0x4 DUP1 CALLDATASIZE SUB PUSH1 0x20 DUP2 LT ISZERO PUSH2 0x2B9 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 CALLDATALOAD PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 POP POP POP PUSH2 0x13E3 JUMP JUMPDEST STOP JUMPDEST PUSH2 0x313 PUSH1 0x4 DUP1 CALLDATASIZE SUB PUSH1 0x20 DUP2 LT ISZERO PUSH2 0x2FD JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 CALLDATALOAD SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 POP POP POP PUSH2 0x150C JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x355 PUSH1 0x4 DUP1 CALLDATASIZE SUB PUSH1 0x20 DUP2 LT ISZERO PUSH2 0x33F JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 CALLDATALOAD SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 POP POP POP PUSH2 0x152D JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x39F PUSH2 0x1569 JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x3AF JUMPI INVALID JUMPDEST PUSH1 0xFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x3CB PUSH2 0x157C JUMP JUMPDEST STOP JUMPDEST PUSH2 0x3D5 PUSH2 0x187D JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE DUP4 DUP2 DUP2 MLOAD DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH1 0x20 MUL DUP1 DUP4 DUP4 PUSH1 0x0 JUMPDEST DUP4 DUP2 LT ISZERO PUSH2 0x418 JUMPI DUP1 DUP3 ADD MLOAD DUP2 DUP5 ADD MSTORE PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH2 0x3FD JUMP JUMPDEST POP POP POP POP SWAP1 POP ADD SWAP3 POP POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x434 PUSH2 0x190B JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x5D0 PUSH1 0x4 DUP1 CALLDATASIZE SUB PUSH1 0x60 DUP2 LT ISZERO PUSH2 0x48C JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 CALLDATALOAD SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 DUP1 CALLDATALOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH5 0x100000000 DUP2 GT ISZERO PUSH2 0x4B3 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP3 ADD DUP4 PUSH1 0x20 DUP3 ADD GT ISZERO PUSH2 0x4C5 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP1 CALLDATALOAD SWAP1 PUSH1 0x20 ADD SWAP2 DUP5 PUSH1 0x1 DUP4 MUL DUP5 ADD GT PUSH5 0x100000000 DUP4 GT OR ISZERO PUSH2 0x4E7 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST SWAP2 SWAP1 DUP1 DUP1 PUSH1 0x1F ADD PUSH1 0x20 DUP1 SWAP2 DIV MUL PUSH1 0x20 ADD PUSH1 0x40 MLOAD SWAP1 DUP2 ADD PUSH1 0x40 MSTORE DUP1 SWAP4 SWAP3 SWAP2 SWAP1 DUP2 DUP2 MSTORE PUSH1 0x20 ADD DUP4 DUP4 DUP1 DUP3 DUP5 CALLDATACOPY PUSH1 0x0 DUP2 DUP5 ADD MSTORE PUSH1 0x1F NOT PUSH1 0x1F DUP3 ADD AND SWAP1 POP DUP1 DUP4 ADD SWAP3 POP POP POP POP POP POP POP SWAP2 SWAP3 SWAP2 SWAP3 SWAP1 DUP1 CALLDATALOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH5 0x100000000 DUP2 GT ISZERO PUSH2 0x54A JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP3 ADD DUP4 PUSH1 0x20 DUP3 ADD GT ISZERO PUSH2 0x55C JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP1 CALLDATALOAD SWAP1 PUSH1 0x20 ADD SWAP2 DUP5 PUSH1 0x1 DUP4 MUL DUP5 ADD GT PUSH5 0x100000000 DUP4 GT OR ISZERO PUSH2 0x57E JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST SWAP2 SWAP1 DUP1 DUP1 PUSH1 0x1F ADD PUSH1 0x20 DUP1 SWAP2 DIV MUL PUSH1 0x20 ADD PUSH1 0x40 MLOAD SWAP1 DUP2 ADD PUSH1 0x40 MSTORE DUP1 SWAP4 SWAP3 SWAP2 SWAP1 DUP2 DUP2 MSTORE PUSH1 0x20 ADD DUP4 DUP4 DUP1 DUP3 DUP5 CALLDATACOPY PUSH1 0x0 DUP2 DUP5 ADD MSTORE PUSH1 0x1F NOT PUSH1 0x1F DUP3 ADD AND SWAP1 POP DUP1 DUP4 ADD SWAP3 POP POP POP POP POP POP POP SWAP2 SWAP3 SWAP2 SWAP3 SWAP1 POP POP POP PUSH2 0x1930 JUMP JUMPDEST STOP JUMPDEST PUSH2 0x5DA PUSH2 0x1C7B JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x5F8 PUSH2 0x1C81 JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP5 DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH1 0x20 ADD DUP1 PUSH1 0x20 ADD DUP4 DUP2 SUB DUP4 MSTORE DUP6 DUP2 DUP2 MLOAD DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 DUP1 DUP4 DUP4 PUSH1 0x0 JUMPDEST DUP4 DUP2 LT ISZERO PUSH2 0x642 JUMPI DUP1 DUP3 ADD MLOAD DUP2 DUP5 ADD MSTORE PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH2 0x627 JUMP JUMPDEST POP POP POP POP SWAP1 POP SWAP1 DUP2 ADD SWAP1 PUSH1 0x1F AND DUP1 ISZERO PUSH2 0x66F JUMPI DUP1 DUP3 SUB DUP1 MLOAD PUSH1 0x1 DUP4 PUSH1 0x20 SUB PUSH2 0x100 EXP SUB NOT AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP JUMPDEST POP DUP4 DUP2 SUB DUP3 MSTORE DUP5 DUP2 DUP2 MLOAD DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 DUP1 DUP4 DUP4 PUSH1 0x0 JUMPDEST DUP4 DUP2 LT ISZERO PUSH2 0x6A8 JUMPI DUP1 DUP3 ADD MLOAD DUP2 DUP5 ADD MSTORE PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH2 0x68D JUMP JUMPDEST POP POP POP POP SWAP1 POP SWAP1 DUP2 ADD SWAP1 PUSH1 0x1F AND DUP1 ISZERO PUSH2 0x6D5 JUMPI DUP1 DUP3 SUB DUP1 MLOAD PUSH1 0x1 DUP4 PUSH1 0x20 SUB PUSH2 0x100 EXP SUB NOT AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP JUMPDEST POP SWAP6 POP POP POP POP POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x6EE PUSH2 0x1DC9 JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x738 PUSH2 0x1DEF JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP5 DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH1 0x20 ADD DUP1 PUSH1 0x20 ADD DUP4 DUP2 SUB DUP4 MSTORE DUP6 DUP2 DUP2 MLOAD DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 DUP1 DUP4 DUP4 PUSH1 0x0 JUMPDEST DUP4 DUP2 LT ISZERO PUSH2 0x782 JUMPI DUP1 DUP3 ADD MLOAD DUP2 DUP5 ADD MSTORE PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH2 0x767 JUMP JUMPDEST POP POP POP POP SWAP1 POP SWAP1 DUP2 ADD SWAP1 PUSH1 0x1F AND DUP1 ISZERO PUSH2 0x7AF JUMPI DUP1 DUP3 SUB DUP1 MLOAD PUSH1 0x1 DUP4 PUSH1 0x20 SUB PUSH2 0x100 EXP SUB NOT AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP JUMPDEST POP DUP4 DUP2 SUB DUP3 MSTORE DUP5 DUP2 DUP2 MLOAD DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 DUP1 DUP4 DUP4 PUSH1 0x0 JUMPDEST DUP4 DUP2 LT ISZERO PUSH2 0x7E8 JUMPI DUP1 DUP3 ADD MLOAD DUP2 DUP5 ADD MSTORE PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH2 0x7CD JUMP JUMPDEST POP POP POP POP SWAP1 POP SWAP1 DUP2 ADD SWAP1 PUSH1 0x1F AND DUP1 ISZERO PUSH2 0x815 JUMPI DUP1 DUP3 SUB DUP1 MLOAD PUSH1 0x1 DUP4 PUSH1 0x20 SUB PUSH2 0x100 EXP SUB NOT AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP JUMPDEST POP SWAP6 POP POP POP POP POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0x82E PUSH2 0x1F47 JUMP JUMPDEST STOP JUMPDEST PUSH1 0x0 PUSH1 0x1 DUP1 PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x840 JUMPI INVALID JUMPDEST PUSH1 0x8 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH1 0xFF AND PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x85B JUMPI INVALID JUMPDEST EQ PUSH2 0x8CE JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0xD DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x496E76616C696420737461746500000000000000000000000000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND CALLER PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND EQ PUSH2 0x991 JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0x18 DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x4F6E6C792041646D696E2063616E2063616C6C20746869730000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0x45504805 ADDRESS PUSH1 0x40 MLOAD DUP3 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP3 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x20 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH2 0xA32 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0xA46 JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP PUSH1 0x40 MLOAD RETURNDATASIZE PUSH1 0x20 DUP2 LT ISZERO PUSH2 0xA5C JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 POP POP POP PUSH1 0x6 DUP2 SWAP1 SSTORE POP PUSH1 0x6 SLOAD SWAP2 POP POP SWAP1 JUMP JUMPDEST PUSH1 0x7 SLOAD DUP2 JUMP JUMPDEST PUSH1 0x60 PUSH1 0x2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND CALLER PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND EQ PUSH2 0xB47 JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0x18 DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x4F6E6C792041646D696E2063616E2063616C6C20746869730000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0x4188B458 ADDRESS PUSH1 0x40 MLOAD DUP3 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP3 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x0 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH2 0xBE8 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0xBFC JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP PUSH1 0x40 MLOAD RETURNDATASIZE PUSH1 0x0 DUP3 RETURNDATACOPY RETURNDATASIZE PUSH1 0x1F NOT PUSH1 0x1F DUP3 ADD AND DUP3 ADD DUP1 PUSH1 0x40 MSTORE POP PUSH1 0x20 DUP2 LT ISZERO PUSH2 0xC26 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 MLOAD PUSH1 0x40 MLOAD SWAP4 SWAP3 SWAP2 SWAP1 DUP5 PUSH5 0x100000000 DUP3 GT ISZERO PUSH2 0xC46 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP4 DUP3 ADD SWAP2 POP PUSH1 0x20 DUP3 ADD DUP6 DUP2 GT ISZERO PUSH2 0xC5C JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP3 MLOAD DUP7 PUSH1 0x20 DUP3 MUL DUP4 ADD GT PUSH5 0x100000000 DUP3 GT OR ISZERO PUSH2 0xC79 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP1 DUP4 MSTORE PUSH1 0x20 DUP4 ADD SWAP3 POP POP POP SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH1 0x20 MUL DUP1 DUP4 DUP4 PUSH1 0x0 JUMPDEST DUP4 DUP2 LT ISZERO PUSH2 0xCB0 JUMPI DUP1 DUP3 ADD MLOAD DUP2 DUP5 ADD MSTORE PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH2 0xC95 JUMP JUMPDEST POP POP POP POP SWAP1 POP ADD PUSH1 0x40 MSTORE POP POP POP PUSH1 0x9 SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH2 0xCD2 SWAP3 SWAP2 SWAP1 PUSH2 0x218F JUMP JUMPDEST POP PUSH1 0x9 DUP1 SLOAD DUP1 PUSH1 0x20 MUL PUSH1 0x20 ADD PUSH1 0x40 MLOAD SWAP1 DUP2 ADD PUSH1 0x40 MSTORE DUP1 SWAP3 SWAP2 SWAP1 DUP2 DUP2 MSTORE PUSH1 0x20 ADD DUP3 DUP1 SLOAD DUP1 ISZERO PUSH2 0xD55 JUMPI PUSH1 0x20 MUL DUP3 ADD SWAP2 SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 JUMPDEST DUP2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP1 PUSH1 0x1 ADD SWAP1 DUP1 DUP4 GT PUSH2 0xD0B JUMPI JUMPDEST POP POP POP POP POP SWAP1 POP SWAP1 JUMP JUMPDEST PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0x4E2CE5B4 PUSH1 0x40 MLOAD DUP2 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD PUSH1 0x20 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 DUP7 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH2 0xDC7 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS STATICCALL ISZERO DUP1 ISZERO PUSH2 0xDDB JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP PUSH1 0x40 MLOAD RETURNDATASIZE PUSH1 0x20 DUP2 LT ISZERO PUSH2 0xDF1 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 POP POP POP PUSH1 0x3 PUSH1 0x0 ADD DUP2 SWAP1 SSTORE POP JUMP JUMPDEST PUSH1 0x9 DUP2 DUP2 SLOAD DUP2 LT PUSH2 0xE1A JUMPI INVALID JUMPDEST SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 ADD PUSH1 0x0 SWAP2 POP SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 JUMP JUMPDEST PUSH1 0x0 PUSH1 0x2 DUP1 PUSH1 0x3 DUP2 GT ISZERO PUSH2 0xE59 JUMPI INVALID JUMPDEST PUSH1 0x8 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH1 0xFF AND PUSH1 0x3 DUP2 GT ISZERO PUSH2 0xE74 JUMPI INVALID JUMPDEST EQ PUSH2 0xEE7 JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0xD DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x496E76616C696420737461746500000000000000000000000000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND CALLER PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND EQ PUSH2 0xFAA JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0x18 DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x4F6E6C792041646D696E2063616E2063616C6C20746869730000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0xDEEB3E70 ADDRESS PUSH1 0x3 PUSH1 0x40 MLOAD DUP4 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP4 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP3 POP POP POP PUSH1 0x0 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH2 0x1054 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x1068 JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP PUSH1 0x3 PUSH1 0x8 PUSH1 0x0 PUSH2 0x100 EXP DUP2 SLOAD DUP2 PUSH1 0xFF MUL NOT AND SWAP1 DUP4 PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x108B JUMPI INVALID JUMPDEST MUL OR SWAP1 SSTORE POP PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0xC692FC74 ADDRESS PUSH1 0x40 MLOAD DUP3 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP3 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x20 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH2 0x1131 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x1145 JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP PUSH1 0x40 MLOAD RETURNDATASIZE PUSH1 0x20 DUP2 LT ISZERO PUSH2 0x115B JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2 SWAP1 POP POP POP PUSH1 0x7 DUP2 SWAP1 SSTORE POP PUSH1 0x7 SLOAD SWAP2 POP POP SWAP1 JUMP JUMPDEST PUSH1 0x2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND CALLER PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND EQ PUSH2 0x123E JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0x18 DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x4F6E6C792041646D696E2063616E2063616C6C20746869730000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0x27EABA5A ADDRESS PUSH1 0x40 MLOAD DUP3 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP3 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x0 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH2 0x12DF JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x12F3 JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP PUSH1 0x40 MLOAD RETURNDATASIZE PUSH1 0x0 DUP3 RETURNDATACOPY RETURNDATASIZE PUSH1 0x1F NOT PUSH1 0x1F DUP3 ADD AND DUP3 ADD DUP1 PUSH1 0x40 MSTORE POP PUSH1 0x20 DUP2 LT ISZERO PUSH2 0x131D JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 ADD SWAP1 DUP1 DUP1 MLOAD PUSH1 0x40 MLOAD SWAP4 SWAP3 SWAP2 SWAP1 DUP5 PUSH5 0x100000000 DUP3 GT ISZERO PUSH2 0x133D JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP4 DUP3 ADD SWAP2 POP PUSH1 0x20 DUP3 ADD DUP6 DUP2 GT ISZERO PUSH2 0x1353 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP3 MLOAD DUP7 PUSH1 0x20 DUP3 MUL DUP4 ADD GT PUSH5 0x100000000 DUP3 GT OR ISZERO PUSH2 0x1370 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP1 DUP4 MSTORE PUSH1 0x20 DUP4 ADD SWAP3 POP POP POP SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH1 0x20 MUL DUP1 DUP4 DUP4 PUSH1 0x0 JUMPDEST DUP4 DUP2 LT ISZERO PUSH2 0x13A7 JUMPI DUP1 DUP3 ADD MLOAD DUP2 DUP5 ADD MSTORE PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH2 0x138C JUMP JUMPDEST POP POP POP POP SWAP1 POP ADD PUSH1 0x40 MSTORE POP POP POP PUSH1 0xA SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH2 0x13C9 SWAP3 SWAP2 SWAP1 PUSH2 0x2219 JUMP JUMPDEST POP JUMP JUMPDEST PUSH1 0x0 PUSH1 0x8 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH1 0xFF AND SWAP1 POP SWAP1 JUMP JUMPDEST PUSH1 0x2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND CALLER PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND EQ PUSH2 0x14A6 JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0x18 DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x4F6E6C792041646D696E2063616E2063616C6C20746869730000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0xB DUP2 SWAP1 DUP1 PUSH1 0x1 DUP2 SLOAD ADD DUP1 DUP3 SSTORE DUP1 SWAP2 POP POP PUSH1 0x1 SWAP1 SUB SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 ADD PUSH1 0x0 SWAP1 SWAP2 SWAP1 SWAP2 SWAP1 SWAP2 PUSH2 0x100 EXP DUP2 SLOAD DUP2 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF MUL NOT AND SWAP1 DUP4 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND MUL OR SWAP1 SSTORE POP POP JUMP JUMPDEST PUSH1 0xA DUP2 DUP2 SLOAD DUP2 LT PUSH2 0x1519 JUMPI INVALID JUMPDEST SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 ADD PUSH1 0x0 SWAP2 POP SWAP1 POP SLOAD DUP2 JUMP JUMPDEST PUSH1 0xB DUP2 DUP2 SLOAD DUP2 LT PUSH2 0x153A JUMPI INVALID JUMPDEST SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 ADD PUSH1 0x0 SWAP2 POP SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 JUMP JUMPDEST PUSH1 0x8 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH1 0xFF AND DUP2 JUMP JUMPDEST PUSH1 0x2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND CALLER PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND EQ PUSH2 0x163F JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0x18 DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x4F6E6C792041646D696E2063616E2063616C6C20746869730000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x1 DUP1 PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x164D JUMPI INVALID JUMPDEST PUSH1 0x8 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH1 0xFF AND PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x1668 JUMPI INVALID JUMPDEST EQ PUSH2 0x16DB JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0xD DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x496E76616C696420737461746500000000000000000000000000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0xDEEB3E70 ADDRESS PUSH1 0x2 PUSH1 0x40 MLOAD DUP4 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP4 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP3 POP POP POP PUSH1 0x0 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH2 0x1785 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x1799 JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP PUSH1 0x2 PUSH1 0x8 PUSH1 0x0 PUSH2 0x100 EXP DUP2 SLOAD DUP2 PUSH1 0xFF MUL NOT AND SWAP1 DUP4 PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x17BC JUMPI INVALID JUMPDEST MUL OR SWAP1 SSTORE POP PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0x6BC03CF0 ADDRESS PUSH1 0x40 MLOAD DUP3 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP3 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x0 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH2 0x1862 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x1876 JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP POP JUMP JUMPDEST PUSH1 0x60 PUSH1 0xB DUP1 SLOAD DUP1 PUSH1 0x20 MUL PUSH1 0x20 ADD PUSH1 0x40 MLOAD SWAP1 DUP2 ADD PUSH1 0x40 MSTORE DUP1 SWAP3 SWAP2 SWAP1 DUP2 DUP2 MSTORE PUSH1 0x20 ADD DUP3 DUP1 SLOAD DUP1 ISZERO PUSH2 0x1901 JUMPI PUSH1 0x20 MUL DUP3 ADD SWAP2 SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 JUMPDEST DUP2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD SWAP1 PUSH1 0x1 ADD SWAP1 DUP1 DUP4 GT PUSH2 0x18B7 JUMPI JUMPDEST POP POP POP POP POP SWAP1 POP SWAP1 JUMP JUMPDEST PUSH1 0x0 DUP1 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 JUMP JUMPDEST PUSH1 0x2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND CALLER PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND EQ PUSH2 0x19F3 JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0x18 DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x4F6E6C792041646D696E2063616E2063616C6C20746869730000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x3 PUSH1 0x0 ADD SLOAD PUSH1 0x40 MLOAD PUSH1 0x20 ADD DUP1 DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD PUSH1 0x20 DUP2 DUP4 SUB SUB DUP2 MSTORE SWAP1 PUSH1 0x40 MSTORE DUP1 MLOAD SWAP1 PUSH1 0x20 ADD KECCAK256 DUP4 PUSH1 0x40 MLOAD PUSH1 0x20 ADD DUP1 DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD PUSH1 0x20 DUP2 DUP4 SUB SUB DUP2 MSTORE SWAP1 PUSH1 0x40 MSTORE DUP1 MLOAD SWAP1 PUSH1 0x20 ADD KECCAK256 EQ PUSH2 0x1A56 JUMPI DUP3 PUSH1 0x3 PUSH1 0x0 ADD DUP2 SWAP1 SSTORE POP JUMPDEST PUSH1 0x3 PUSH1 0x1 ADD PUSH1 0x40 MLOAD PUSH1 0x20 ADD DUP1 DUP3 DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV DUP1 ISZERO PUSH2 0x1AB9 JUMPI DUP1 PUSH1 0x1F LT PUSH2 0x1A97 JUMPI PUSH2 0x100 DUP1 DUP4 SLOAD DIV MUL DUP4 MSTORE SWAP2 DUP3 ADD SWAP2 PUSH2 0x1AB9 JUMP JUMPDEST DUP3 ADD SWAP2 SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 JUMPDEST DUP2 SLOAD DUP2 MSTORE SWAP1 PUSH1 0x1 ADD SWAP1 PUSH1 0x20 ADD DUP1 DUP4 GT PUSH2 0x1AA5 JUMPI JUMPDEST POP POP SWAP2 POP POP PUSH1 0x40 MLOAD PUSH1 0x20 DUP2 DUP4 SUB SUB DUP2 MSTORE SWAP1 PUSH1 0x40 MSTORE DUP1 MLOAD SWAP1 PUSH1 0x20 ADD KECCAK256 DUP3 PUSH1 0x40 MLOAD PUSH1 0x20 ADD DUP1 DUP3 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 DUP1 DUP4 DUP4 JUMPDEST PUSH1 0x20 DUP4 LT PUSH2 0x1B0B JUMPI DUP1 MLOAD DUP3 MSTORE PUSH1 0x20 DUP3 ADD SWAP2 POP PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH1 0x20 DUP4 SUB SWAP3 POP PUSH2 0x1AE8 JUMP JUMPDEST PUSH1 0x1 DUP4 PUSH1 0x20 SUB PUSH2 0x100 EXP SUB DUP1 NOT DUP3 MLOAD AND DUP2 DUP5 MLOAD AND DUP1 DUP3 OR DUP6 MSTORE POP POP POP POP POP POP SWAP1 POP ADD SWAP2 POP POP PUSH1 0x40 MLOAD PUSH1 0x20 DUP2 DUP4 SUB SUB DUP2 MSTORE SWAP1 PUSH1 0x40 MSTORE DUP1 MLOAD SWAP1 PUSH1 0x20 ADD KECCAK256 EQ PUSH2 0x1B66 JUMPI DUP2 PUSH1 0x3 PUSH1 0x1 ADD SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH2 0x1B64 SWAP3 SWAP2 SWAP1 PUSH2 0x2266 JUMP JUMPDEST POP JUMPDEST PUSH1 0x3 PUSH1 0x2 ADD PUSH1 0x40 MLOAD PUSH1 0x20 ADD DUP1 DUP3 DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV DUP1 ISZERO PUSH2 0x1BC9 JUMPI DUP1 PUSH1 0x1F LT PUSH2 0x1BA7 JUMPI PUSH2 0x100 DUP1 DUP4 SLOAD DIV MUL DUP4 MSTORE SWAP2 DUP3 ADD SWAP2 PUSH2 0x1BC9 JUMP JUMPDEST DUP3 ADD SWAP2 SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 JUMPDEST DUP2 SLOAD DUP2 MSTORE SWAP1 PUSH1 0x1 ADD SWAP1 PUSH1 0x20 ADD DUP1 DUP4 GT PUSH2 0x1BB5 JUMPI JUMPDEST POP POP SWAP2 POP POP PUSH1 0x40 MLOAD PUSH1 0x20 DUP2 DUP4 SUB SUB DUP2 MSTORE SWAP1 PUSH1 0x40 MSTORE DUP1 MLOAD SWAP1 PUSH1 0x20 ADD KECCAK256 DUP2 PUSH1 0x40 MLOAD PUSH1 0x20 ADD DUP1 DUP3 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 DUP1 DUP4 DUP4 JUMPDEST PUSH1 0x20 DUP4 LT PUSH2 0x1C1B JUMPI DUP1 MLOAD DUP3 MSTORE PUSH1 0x20 DUP3 ADD SWAP2 POP PUSH1 0x20 DUP2 ADD SWAP1 POP PUSH1 0x20 DUP4 SUB SWAP3 POP PUSH2 0x1BF8 JUMP JUMPDEST PUSH1 0x1 DUP4 PUSH1 0x20 SUB PUSH2 0x100 EXP SUB DUP1 NOT DUP3 MLOAD AND DUP2 DUP5 MLOAD AND DUP1 DUP3 OR DUP6 MSTORE POP POP POP POP POP POP SWAP1 POP ADD SWAP2 POP POP PUSH1 0x40 MLOAD PUSH1 0x20 DUP2 DUP4 SUB SUB DUP2 MSTORE SWAP1 PUSH1 0x40 MSTORE DUP1 MLOAD SWAP1 PUSH1 0x20 ADD KECCAK256 EQ PUSH2 0x1C76 JUMPI DUP1 PUSH1 0x3 PUSH1 0x2 ADD SWAP1 DUP1 MLOAD SWAP1 PUSH1 0x20 ADD SWAP1 PUSH2 0x1C74 SWAP3 SWAP2 SWAP1 PUSH2 0x2266 JUMP JUMPDEST POP JUMPDEST POP POP POP JUMP JUMPDEST PUSH1 0x6 SLOAD DUP2 JUMP JUMPDEST PUSH1 0x3 DUP1 PUSH1 0x0 ADD SLOAD SWAP1 DUP1 PUSH1 0x1 ADD DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV DUP1 PUSH1 0x1F ADD PUSH1 0x20 DUP1 SWAP2 DIV MUL PUSH1 0x20 ADD PUSH1 0x40 MLOAD SWAP1 DUP2 ADD PUSH1 0x40 MSTORE DUP1 SWAP3 SWAP2 SWAP1 DUP2 DUP2 MSTORE PUSH1 0x20 ADD DUP3 DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV DUP1 ISZERO PUSH2 0x1D21 JUMPI DUP1 PUSH1 0x1F LT PUSH2 0x1CF6 JUMPI PUSH2 0x100 DUP1 DUP4 SLOAD DIV MUL DUP4 MSTORE SWAP2 PUSH1 0x20 ADD SWAP2 PUSH2 0x1D21 JUMP JUMPDEST DUP3 ADD SWAP2 SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 JUMPDEST DUP2 SLOAD DUP2 MSTORE SWAP1 PUSH1 0x1 ADD SWAP1 PUSH1 0x20 ADD DUP1 DUP4 GT PUSH2 0x1D04 JUMPI DUP3 SWAP1 SUB PUSH1 0x1F AND DUP3 ADD SWAP2 JUMPDEST POP POP POP POP POP SWAP1 DUP1 PUSH1 0x2 ADD DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV DUP1 PUSH1 0x1F ADD PUSH1 0x20 DUP1 SWAP2 DIV MUL PUSH1 0x20 ADD PUSH1 0x40 MLOAD SWAP1 DUP2 ADD PUSH1 0x40 MSTORE DUP1 SWAP3 SWAP2 SWAP1 DUP2 DUP2 MSTORE PUSH1 0x20 ADD DUP3 DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV DUP1 ISZERO PUSH2 0x1DBF JUMPI DUP1 PUSH1 0x1F LT PUSH2 0x1D94 JUMPI PUSH2 0x100 DUP1 DUP4 SLOAD DIV MUL DUP4 MSTORE SWAP2 PUSH1 0x20 ADD SWAP2 PUSH2 0x1DBF JUMP JUMPDEST DUP3 ADD SWAP2 SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 JUMPDEST DUP2 SLOAD DUP2 MSTORE SWAP1 PUSH1 0x1 ADD SWAP1 PUSH1 0x20 ADD DUP1 DUP4 GT PUSH2 0x1DA2 JUMPI DUP3 SWAP1 SUB PUSH1 0x1F AND DUP3 ADD SWAP2 JUMPDEST POP POP POP POP POP SWAP1 POP DUP4 JUMP JUMPDEST PUSH1 0x2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 JUMP JUMPDEST PUSH1 0x0 PUSH1 0x60 DUP1 PUSH1 0x3 PUSH1 0x0 ADD SLOAD PUSH1 0x3 PUSH1 0x1 ADD PUSH1 0x3 PUSH1 0x2 ADD DUP2 DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV DUP1 PUSH1 0x1F ADD PUSH1 0x20 DUP1 SWAP2 DIV MUL PUSH1 0x20 ADD PUSH1 0x40 MLOAD SWAP1 DUP2 ADD PUSH1 0x40 MSTORE DUP1 SWAP3 SWAP2 SWAP1 DUP2 DUP2 MSTORE PUSH1 0x20 ADD DUP3 DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV DUP1 ISZERO PUSH2 0x1E99 JUMPI DUP1 PUSH1 0x1F LT PUSH2 0x1E6E JUMPI PUSH2 0x100 DUP1 DUP4 SLOAD DIV MUL DUP4 MSTORE SWAP2 PUSH1 0x20 ADD SWAP2 PUSH2 0x1E99 JUMP JUMPDEST DUP3 ADD SWAP2 SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 JUMPDEST DUP2 SLOAD DUP2 MSTORE SWAP1 PUSH1 0x1 ADD SWAP1 PUSH1 0x20 ADD DUP1 DUP4 GT PUSH2 0x1E7C JUMPI DUP3 SWAP1 SUB PUSH1 0x1F AND DUP3 ADD SWAP2 JUMPDEST POP POP POP POP POP SWAP2 POP DUP1 DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV DUP1 PUSH1 0x1F ADD PUSH1 0x20 DUP1 SWAP2 DIV MUL PUSH1 0x20 ADD PUSH1 0x40 MLOAD SWAP1 DUP2 ADD PUSH1 0x40 MSTORE DUP1 SWAP3 SWAP2 SWAP1 DUP2 DUP2 MSTORE PUSH1 0x20 ADD DUP3 DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV DUP1 ISZERO PUSH2 0x1F35 JUMPI DUP1 PUSH1 0x1F LT PUSH2 0x1F0A JUMPI PUSH2 0x100 DUP1 DUP4 SLOAD DIV MUL DUP4 MSTORE SWAP2 PUSH1 0x20 ADD SWAP2 PUSH2 0x1F35 JUMP JUMPDEST DUP3 ADD SWAP2 SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 JUMPDEST DUP2 SLOAD DUP2 MSTORE SWAP1 PUSH1 0x1 ADD SWAP1 PUSH1 0x20 ADD DUP1 DUP4 GT PUSH2 0x1F18 JUMPI DUP3 SWAP1 SUB PUSH1 0x1F AND DUP3 ADD SWAP2 JUMPDEST POP POP POP POP POP SWAP1 POP SWAP3 POP SWAP3 POP SWAP3 POP SWAP1 SWAP2 SWAP3 JUMP JUMPDEST PUSH1 0x0 DUP1 PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x1F55 JUMPI INVALID JUMPDEST PUSH1 0x8 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH1 0xFF AND PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x1F70 JUMPI INVALID JUMPDEST EQ PUSH2 0x1FE3 JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0xD DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x496E76616C696420737461746500000000000000000000000000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x2 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND CALLER PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND EQ PUSH2 0x20A6 JUMPI PUSH1 0x40 MLOAD PUSH32 0x8C379A000000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP1 PUSH1 0x20 ADD DUP3 DUP2 SUB DUP3 MSTORE PUSH1 0x18 DUP2 MSTORE PUSH1 0x20 ADD DUP1 PUSH32 0x4F6E6C792041646D696E2063616E2063616C6C20746869730000000000000000 DUP2 MSTORE POP PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x1 PUSH1 0x8 PUSH1 0x0 PUSH2 0x100 EXP DUP2 SLOAD DUP2 PUSH1 0xFF MUL NOT AND SWAP1 DUP4 PUSH1 0x3 DUP2 GT ISZERO PUSH2 0x20C5 JUMPI INVALID JUMPDEST MUL OR SWAP1 SSTORE POP PUSH1 0x1 PUSH1 0x0 SWAP1 SLOAD SWAP1 PUSH2 0x100 EXP SWAP1 DIV PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH4 0xDEEB3E70 ADDRESS PUSH1 0x1 PUSH1 0x40 MLOAD DUP4 PUSH4 0xFFFFFFFF AND PUSH1 0xE0 SHL DUP2 MSTORE PUSH1 0x4 ADD DUP1 DUP4 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 ADD DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP3 POP POP POP PUSH1 0x0 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH2 0x2174 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x2188 JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP POP JUMP JUMPDEST DUP3 DUP1 SLOAD DUP3 DUP3 SSTORE SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 DUP2 ADD SWAP3 DUP3 ISZERO PUSH2 0x2208 JUMPI SWAP2 PUSH1 0x20 MUL DUP3 ADD JUMPDEST DUP3 DUP2 GT ISZERO PUSH2 0x2207 JUMPI DUP3 MLOAD DUP3 PUSH1 0x0 PUSH2 0x100 EXP DUP2 SLOAD DUP2 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF MUL NOT AND SWAP1 DUP4 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND MUL OR SWAP1 SSTORE POP SWAP2 PUSH1 0x20 ADD SWAP2 SWAP1 PUSH1 0x1 ADD SWAP1 PUSH2 0x21AF JUMP JUMPDEST JUMPDEST POP SWAP1 POP PUSH2 0x2215 SWAP2 SWAP1 PUSH2 0x22E6 JUMP JUMPDEST POP SWAP1 JUMP JUMPDEST DUP3 DUP1 SLOAD DUP3 DUP3 SSTORE SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 DUP2 ADD SWAP3 DUP3 ISZERO PUSH2 0x2255 JUMPI SWAP2 PUSH1 0x20 MUL DUP3 ADD JUMPDEST DUP3 DUP2 GT ISZERO PUSH2 0x2254 JUMPI DUP3 MLOAD DUP3 SSTORE SWAP2 PUSH1 0x20 ADD SWAP2 SWAP1 PUSH1 0x1 ADD SWAP1 PUSH2 0x2239 JUMP JUMPDEST JUMPDEST POP SWAP1 POP PUSH2 0x2262 SWAP2 SWAP1 PUSH2 0x2329 JUMP JUMPDEST POP SWAP1 JUMP JUMPDEST DUP3 DUP1 SLOAD PUSH1 0x1 DUP2 PUSH1 0x1 AND ISZERO PUSH2 0x100 MUL SUB AND PUSH1 0x2 SWAP1 DIV SWAP1 PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 KECCAK256 SWAP1 PUSH1 0x1F ADD PUSH1 0x20 SWAP1 DIV DUP2 ADD SWAP3 DUP3 PUSH1 0x1F LT PUSH2 0x22A7 JUMPI DUP1 MLOAD PUSH1 0xFF NOT AND DUP4 DUP1 ADD OR DUP6 SSTORE PUSH2 0x22D5 JUMP JUMPDEST DUP3 DUP1 ADD PUSH1 0x1 ADD DUP6 SSTORE DUP3 ISZERO PUSH2 0x22D5 JUMPI SWAP2 DUP3 ADD JUMPDEST DUP3 DUP2 GT ISZERO PUSH2 0x22D4 JUMPI DUP3 MLOAD DUP3 SSTORE SWAP2 PUSH1 0x20 ADD SWAP2 SWAP1 PUSH1 0x1 ADD SWAP1 PUSH2 0x22B9 JUMP JUMPDEST JUMPDEST POP SWAP1 POP PUSH2 0x22E2 SWAP2 SWAP1 PUSH2 0x2329 JUMP JUMPDEST POP SWAP1 JUMP JUMPDEST PUSH2 0x2326 SWAP2 SWAP1 JUMPDEST DUP1 DUP3 GT ISZERO PUSH2 0x2322 JUMPI PUSH1 0x0 DUP2 DUP2 PUSH2 0x100 EXP DUP2 SLOAD SWAP1 PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF MUL NOT AND SWAP1 SSTORE POP PUSH1 0x1 ADD PUSH2 0x22EC JUMP JUMPDEST POP SWAP1 JUMP JUMPDEST SWAP1 JUMP JUMPDEST PUSH2 0x234B SWAP2 SWAP1 JUMPDEST DUP1 DUP3 GT ISZERO PUSH2 0x2347 JUMPI PUSH1 0x0 DUP2 PUSH1 0x0 SWAP1 SSTORE POP PUSH1 0x1 ADD PUSH2 0x232F JUMP JUMPDEST POP SWAP1 JUMP JUMPDEST SWAP1 JUMP INVALID LOG2 PUSH5 0x6970667358 0x22 SLT KECCAK256 SWAP4 GAS 0xBE 0xBC 0xE5 0xAE 0xE2 ADDMOD 0xAC SWAP5 0xAF 0x48 MSTORE8 PC JUMP 0xCE RETURNDATASIZE JUMP 0xD9 0x4F PUSH23 0xFE72C9CD9C312C2124148264736F6C6343000600003300 ",
+	"sourceMap": "1356:3843:0:-:0;;;1920:13;1899:34;;;;;;;;;;;;;;;;;;;;;;;;;;2049:624;8:9:-1;5:2;;;30:1;27;20:12;5:2;2049:624:0;;;;;;;;;;;;;;;13:3:-1;8;5:12;2:2;;;30:1;27;20:12;2:2;2049:624:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;19:11:-1;14:3;11:20;8:2;;;44:1;41;34:12;8:2;71:11;66:3;62:21;55:28;;123:4;118:3;114:14;159:9;141:16;138:31;135:2;;;182:1;179;172:12;135:2;219:3;213:10;330:9;325:1;311:12;307:20;289:16;285:43;282:58;261:11;247:12;244:29;233:115;230:2;;;361:1;358;351:12;230:2;384:12;379:3;372:25;420:4;415:3;411:14;404:21;;0:432;;2049:624:0;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;99:1;94:3;90:11;84:18;80:1;75:3;71:11;64:39;52:2;49:1;45:10;40:15;;8:100;;;12:14;2049:624:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;19:11:-1;14:3;11:20;8:2;;;44:1;41;34:12;8:2;71:11;66:3;62:21;55:28;;123:4;118:3;114:14;159:9;141:16;138:31;135:2;;;182:1;179;172:12;135:2;219:3;213:10;330:9;325:1;311:12;307:20;289:16;285:43;282:58;261:11;247:12;244:29;233:115;230:2;;;361:1;358;351:12;230:2;384:12;379:3;372:25;420:4;415:3;411:14;404:21;;0:432;;2049:624:0;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;99:1;94:3;90:11;84:18;80:1;75:3;71:11;64:39;52:2;49:1;45:10;40:15;;8:100;;;12:14;2049:624:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2224:13;2209:12;;:28;;;;;;;;;;;;;;;;;;2268:13;2248:12;;:34;;;;;;;;;;;;;;;;;;2350:12;;;;;;;;;;;:26;;;:28;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;2350:28:0;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;2350:28:0;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;2350:28:0;;;;;;;;;;;;;;;;2336:4;:11;;:42;;;;2405:9;2389:4;:13;;:25;;;;;;;;;;;;:::i;:::-;;2444:12;2425:4;:16;;:31;;;;;;;;;;;;:::i;:::-;;2474:6;2467:5;;:13;;;;;;;;;;;;;;;;;;2617:12;;;;;;;;;;;:23;;;2649:4;2617:38;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;2617:38:0;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;2617:38:0;;;;2049:624;;;;1356:3843;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;:::o;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;:::-;;;;;;;"
+}
+
+const initWeb3 = async() => {
+    if(typeof window.ethereum !== 'undefined') {
+      console.log('Metamask is installed ')
+      web3js = new Web3(window.ethereum);
+      try{
+         await  window.ethereum.enable()
+          accounts = await web3js.eth.getAccounts()    
+          currentAccount=accounts[0]; 
+          console.log("currentAccount",currentAccount)
+        window.ethereum.on("accountsChanged",async (accounts)=>{
+          accounts = await web3js.eth.getAccounts()
+          currentAccount = accounts[0]
+        // console.log("accountsChanged",currentAccount)
+      })    
+      }catch(e){
+        console.log(e)
+      }
+    }
+    else if(typeof window.web3 !== 'undefined') {
+      console.log('Metamask is installed-old version ')
+      currentAccount=accounts[0]
+      web3js = new Web3(window.web3.currentProvider)
+    }else{
+      console.log('You have not installed Metamask. You must install MetaMask to log in')
+      resolve( new Web3('http://localhost:7545'));
+    } 
+};
+
+const initContract = async() => {
+  try{
+    mainInstance= new web3js.eth.Contract(contractAbiMain,mainAddress)
+    //Get infor of Admin
+    admin = await mainInstance.methods.getAdminInfo().call()
+  }catch(e){
+    console.log(e)
+  }
+};
+
+const initApp = async() => {
+  const $create = document.getElementById('create');
+  const $createResult = document.getElementById('create-result');
+  const $edit = document.getElementById('edit');
+  const $editResult = document.getElementById('edit-result');
+  const $add_product = document.getElementById('add_product');
+  const $addPResult = document.getElementById('addP-result');
+  const $notice = document.getElementById('notice');
+  const $delete = document.getElementById('btnDelete');
+
+  // Register new participant
+  $create.addEventListener('submit', async(e) => {
+    e.preventDefault();
+    var name, email, flag =1
+    name = $('#name').val()
+    email = $('#email').val()
+    if( name ==''){
+      flag=0
+      $('.error_name').html("Please type your name")
+    }else{
+      $('.error_name').html("")
+    }
+    if( email ==''){
+      flag=0
+      $('.error_email').html("Please type your email")
+    }else{
+      $('.error_email').html("")
+    }
+    if(flag==1){
+      try{
+        await mainInstance.methods.register(name,email).send({from: currentAccount})
+        $createResult.innerHTML = `New user ${name} - ${email} successfully created`;
+
+        //Update in participants table
+        var result= await mainInstance.methods.getProfileAdd(currentAccount).call()
+        ListPar(result[0],result[2],result[3],result[1],result[5],result[4])
+
+        //Update in profile 
+        ListProfile(result[0],result[1],result[2],result[3],result[4],result[5])
+            
+      }catch(e){
+        console.log(e)
+      $createResult.innerHTML = `Ooops... there was an error while trying to create a new user...`;
+      }
+    }
+  });
+
+  //Update participant info
+  $edit.addEventListener('submit',async (e) => {
+    e.preventDefault();
+    try{
+      const name = e.target.elements[0].value;
+      const email = e.target.elements[1].value;
+      await mainInstance.methods.update(name,email).send({from: currentAccount})
+      $editResult.innerHTML = `Changed name of user ${name} with email ${email} successfully ` ;
+
+      //Update in Profile
+      var result= await mainInstance.methods.getProfileAdd(currentAccount).call()
+      document.getElementById('profile_name').innerHTML = `${result[2]}`
+      document.getElementById('profile_email').innerHTML = `${result[3]}`
+
+      //Update in participants productTable
+      $(`.participants_table`).find(`#namePar_${result[0]}`).text(`${result[2]}`)
+      $(`.participants_table`).find(`#emailPar_${result[0]}`).text(`${result[3]}`)
+
+      $addPResult.innerHTML = ` New Infomation of participant with ID <strong> ${result[0]}</strong> name ${result[1]} is updated successfully!`;
+    }catch(e){
+      console.log(e)
+      $editResult.innerHTML = `Ooops... there was an error while trying to update name of user ${name} with ${email} `;
+    }
+  });
+  
+  // Add/Edit a new product/session
+  $add_product.addEventListener('submit', async(e) => {
+    e.preventDefault();
+    var pName, des,id,btnCre, flag =1,
+    pName = $('#pName').val()
+    des = $('#description').val()
+    btnCre = $('#btnCreate').val()
+    if( pName ==''){
+      flag=0
+      $('.error_pname').html("Please type name of the product")
+    }else{
+      $('.error_pname').html("")
+    }
+    if( des ==''){
+      flag=0
+      $('.error_des').html("Please type description of product")
+    }else{
+      $('.error_des').html("")
+    }
+    //create new product
+    if(flag==1 && btnCre == 'btnCreate' && admin == currentAccount){
+      
+      var Session =await new web3js.eth.Contract(sessAbi)
+      var sessInstance = await Session.deploy({
+        data:'0x'+ byteCode.object,
+        arguments:[mainAddress,admin,pName,des]
+      }).send({from: currentAccount})
+        await sesInstanceAr.push(sessInstance)
+       var result =await sessInstance.methods.getProductInfo().call()
+      try{
+            await ShowSessionTable(result[0],result[1],result[2],sessInstance._address)
+            var status = await sessInstance.methods.getStatusSession().call() 
+            if(parseInt(status) == 0){
+              document.getElementById(`status-${result[0]}`).innerHTML = 'CREATED'
+            }
+            $addPResult.innerHTML = ` New Session of Product <strong> ${result[1]}</strong> is created successfully!`;
+
+          await Edit(result[0])
+          await Start(result[0],result[1],result[2])
+          await Pricing(result[0],result[1])
+          await Stop(result[0])
+          await GetLastPriceResult(result[0])
+      }catch(e){
+        if(e){
+          $addPResult.innerHTML = `Ooops... there was an error while trying to create a new session `;
+        }
+      } 
+      //Edit product info
+    }else if(flag==1 && btnCre == 'btnUpdate' && admin == currentAccount ){
+      try{       
+      var idBtn0= parseInt(document.getElementById('pId').value)      
+      await sesInstanceAr[idBtn0].methods.updateProductInfo(idBtn0,pName,des).send({from: currentAccount})
+      var result =await sesInstanceAr[idBtn0].methods.getProductInfo().call()
+      $(`.btnEdit-${idBtn0}`).closest('tr').find("td:eq(0)").text(`${result[1]}`)
+      $(`.btnEdit-${idBtn0}`).closest('tr').find("td:eq(1)").text(`${result[2]}`)
+      $addPResult.innerHTML = ` New Infomation of Product with ID <strong> ${idBtn0}</strong> with Session ${sesInstanceAr[idBtn0]._address} is updated successfully!`;
+      document.getElementById('btnCreate').innerHTML = 'Create'
+      document.getElementById('btnCreate').value = 'btnCreate'
+      document.getElementById('panel-title').innerHTML = 'Create Session'
+      }catch(e){
+        if(e){
+          $notice.innerHTML =`Ooops... there was an error while trying to edit product infomation with Session ${sesInstanceAr[idBtn0]}`
+        }
+      }
+    } else{
+      $addPResult.innerHTML = `Ooops... there was an error while trying to create a new session `;
+    }         
+  })
+} 
+ //Load Data in smart contract when open browser 
+  const loadData = async() => {
+    //Load list of Participants Table
+  var numPar = await mainInstance.methods.getTotalParNum().call()
+  for(let i=0 ;i<numPar;i++){
+    var result2= await mainInstance.methods.getProfileId(i).call()
+    ListPar(result2[0],result2[2],result2[3],result2[1],result2[5],result2[4])
+  }
+   //Load Profile
+   var result1 = await mainInstance.methods.getProfileAdd(currentAccount).call()
+   ListProfile(result1[0],result1[1],result1[2],result1[3],result1[4],result1[5])
+   if (currentAccount==admin){
+    ListProfile("admin","admin","admin",admin,"admin","admin")
+  }
+   window.ethereum.on("accountsChanged",async (accounts)=>{
+      accounts = await web3js.eth.getAccounts()
+      currentAccount = accounts[0]
+      var result1 = await mainInstance.methods.getProfileAdd(currentAccount).call()
+      ListProfile(result1[0],result1[1],result1[2],result1[3],result1[4],result1[5])
+      if (currentAccount==admin){
+        ListProfile("admin","admin","admin",admin,"admin","admin")
+      }  
+   })
+   
+  //LOAD SESSIONS
+   //-Get all session addresses
+   var sessInfo = await mainInstance.methods.getSessions().call()
+  // -Load session info in product table
+   for(let i=0 ;i<parseInt(sessInfo[1]);i++){
+      var sessInstance= await new web3js.eth.Contract(sessAbi,sessInfo[0][i])
+      await sesInstanceAr.push(sessInstance)
+      var result =await sessInstance.methods.getProductInfo().call()
+      ShowSessionTable(result[0],result[1],result[2],sesInstanceAr[result[0]]._address)
+      var status = await sessInstance.methods.getStatusSession().call()
+      //Get status of session
+      switch(status){
+        case('0'):
+          document.getElementById(`status-${result[0]}`).innerHTML = 'CREATED'
+          break;
+        case('1'):
+          document.getElementById(`status-${result[0]}`).innerHTML = 'STARTED'
+          break;
+        case('2'):
+          document.getElementById(`status-${result[0]}`).innerHTML = 'STOPPED'
+          break;
+        default:
+          document.getElementById(`status-${result[0]}`).innerHTML = 'CLOSED' 
+      }
+      //Button Cancel on Product Table 
+      $('#btnDelete').on('click', async()=>{
+        document.getElementById('pName').value= "";
+        document.getElementById('description').value= "";
+        document.getElementById('pId').value= "";
+        document.getElementById('addP-result').innerHTML  = "";
+        var btnCre = $('#btnCreate').val()
+        if(btnCre == 'btnUpdate'){
+          document.getElementById('btnCreate').innerHTML = '<span class="fa fa-plus mr-2"></span>Create'
+          document.getElementById('btnCreate').value = 'btnCreate'
+          document.getElementById('panel-title').innerHTML = 'Create' 
+        }
+      })
+      //Load Proposed Price 
+      var proposedPrice = await mainInstance.methods.getProposedPrice(sesInstanceAr[i]._address).call()
+      document.getElementById(`ProP-${result[0]}`).innerHTML =`${proposedPrice}`
+      //Load Last Price
+      if(status==3){
+        var lastP = await mainInstance.methods.getLastPrice(sesInstanceAr[i]._address).call()
+        document.getElementById(`LastP-${result[0]}`).innerHTML =`${lastP}`  
+      }
+      await Start(result[0],result[1],result[2])
+      if(status== 1|| status ==2){
+          await ShowProduct(result[0],result[1],result[2])
+      }
+      await Pricing(result[0],result[1])
+      await Stop(result[0])
+      await GetLastPriceResult(result[0])  
+  }
+  for(let i=0 ;i<sesInstanceAr.length;i++){
+    await Edit(i)
+  }
+}
+//List Participant Table
+const ListPar=async(a,b,c,d,e,f)=>{
+  var listPar = ` <tr >
+  <th class="text-center" width="15%" id="idPar_${a}">${a}</th>
+  <th class="text-center" width="15%" id="namePar_${a}">${b}</th>
+  <th class="text-center" width="15%" id="emailPar_${a}">${c}</th>
+  <th class="text-center" width="25%" id="adPar_${a}">${d}</th>
+  <th class="text-center" width="15%" id="numSesPar_${a}">${e}</th>
+  <th class="text-center" width="15%" id="deviPar_${a}">${f}</th>
+</tr>`
+$('.participants_table tbody').append(listPar)   
+
+}
+//List Profile
+const ListProfile=async(a,b,c,d,e,f)=>{
+  document.getElementById('profile_id').innerHTML = `${a}`
+  document.getElementById('profile_addr').innerHTML = `${b}`
+  document.getElementById('profile_name').innerHTML = `${c}`
+  document.getElementById('profile_email').innerHTML = `${d}`
+  document.getElementById('profile_devi').innerHTML = `${e}`
+  document.getElementById('profile_numSes').innerHTML = `${f}`
+
+}
+//Edit Product Info
+const Edit =(i)=>{
+  $(`.btnEdit-${i}`).on('click', async()=>{
+    var idBtn0,idBtn1,idBtn2;
+    idBtn0 = await $(`.btnEdit-${i}`).closest('tr').find("td:eq(0)").text()
+    idBtn1 = await $(`.btnEdit-${i}`).closest('tr').find("td:eq(1)").text()
+    idBtn2 = await $(`.btnEdit-${i}`).closest('tr').find("td:eq(2)").text()
+    document.getElementById('btnCreate').innerHTML = 'Update'
+    document.getElementById('btnCreate').value = 'btnUpdate'
+    document.getElementById('panel-title').innerHTML = 'Update Product Info'
+    document.getElementById('pName').value= idBtn0;
+    document.getElementById('description').value= idBtn1;
+    document.getElementById('pId').value= idBtn2;
+  })
+
+}
+//Start Session
+const Start=async(a,b,c)=>{
+  const $notice = document.getElementById('notice');
+
+  $(`.btnStart-${a}`).on('click', async()=>{
+    try{  
+      var idBtn0 = await parseInt($(`.btnStart-${a}`).closest('tr').find("td:eq(2)").text())              
+      await sesInstanceAr[idBtn0].methods.startSession().send({from: currentAccount})  
+      var status1 = await sesInstanceAr[idBtn0].methods.getStatusSession().call()
+      if(parseInt(status1) == 1){
+        document.getElementById(`status-${a}`).innerHTML = 'STARTED'
+      $notice.innerHTML =`<strong>Notice:</strong>The session ${sesInstanceAr[idBtn0]._address} is started successfully`
+      await ShowProduct(a,b,c)
+      }
+    }catch(e){
+      if(e){
+        $notice.innerHTML =`<strong>Notice:</strong>Ooops... there was an error while trying to start the session ${sesInstanceAr[idBtn0]._address}`
+      }
+    }
+  });
+
+}
+//Show Products on Home
+const ShowProduct=async(a,b,c)=>{
+          var Pshow = ` <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6" >
+                      <div id="product-${a}">
+                        <a href="#" class="thumbnail">
+                          <img src="./src/images/laptop.jpg"  class="img-fluid" />
+                          <h4>Name:${b}</h4>
+                          <h4>Description:${c}</h4>
+                          <h4 id="price_IDsess">ID:<p>${a}</p></h4>
+                        </a>             
+                        <form class="form-inline" id="pricing">
+                                               
+                            <label for="givenPrice-${a}">Your Price:</label>
+                            <input type="number" class="form-control" id="givenPrice-${a}" > 
+                            <span>USD</span> 
+                            <button type="submit" class="btn btn-primary" id="priceBtn-${a}">Submit</button> 
+                        </form>
+                        <p id= "noticePrice-${a}" style="color:red; font-style : italic"></p>
+                      </div>
+                    </div>`  
+      $('.product').append(Pshow)     
+
+}
+//Show Sessions Table
+const ShowSessionTable = async(a,b,c,d)=>{
+  var productTable = await $(`  <tr>
+  <td class="text-center">${b}</td>
+  <td class="text-center">${c}</td>
+  <td class="text-center">${a}</td>
+  <td>
+    <button class="btn btn-warning btnEdit-${a}" id="btnEdit" ><span class="fa fa-pencil mr-2"></span>Edit</button>                         
+  </td>
+  <td>
+  ${d}
+  </td>
+  <td>
+    <button class="btn btn-primary btnStart-${a}" id="btnStart" >Start</button>
+    <button class="btn btn-danger btnStop-${a}" id="btnStop">Stop</button>
+  </td>
+  <td>
+  <p id="ProP-${a}"></p><span>USD</span>                        
+  </td>
+  <td>
+    <button class="btn btn-warning btnCal-${a}" id="btnCal">Get</button> 
+    <p id="LastP-${a}"></p><span>USD</span>                        
+  </td>
+  <td><p id="status-${a}" ></p></td>
+</tr>`);
+$('.product_table tbody').append(productTable)  
+
+}
+
+// Pricing Button
+const Pricing =async(a,b)=>{
+  $(document).on('submit',`#product-${a}`, async(e)=>{
+    e.preventDefault()
+    try{
+      var givenPrice,idBtn0;
+      givenPrice = parseInt($(`#givenPrice-${a}`).val())
+      idBtn0 = parseInt($(`#priceBtn-${a}`).closest('div').find("p:eq(0)").text())    
+      await mainInstance.methods.price(sesInstanceAr[idBtn0]._address,givenPrice).send({from: currentAccount})  
+
+      document.getElementById(`noticePrice-${a}`).innerHTML =`<strong>Notice:</strong>You gave the price <strong> ${givenPrice} VND</strong> for the product <strong>${b} ID: ${a}</strong>  successfully`
+      // idBtn0 = parseInt($(`.btnPro-${result[0]}`).closest('tr').find("td:eq(2)").text())  
+      var proposedPrice = await mainInstance.methods.getProposedPrice(sesInstanceAr[idBtn0]._address).call()
+      document.getElementById(`ProP-${a}`).innerHTML =`${proposedPrice}`
+    
+      $notice.innerHTML = `<strong>Notice:</strong>The proposed Price of session ${sesInstanceAr[idBtn0]._address} is ${proposedPrice} VND at this moment`
+
+    }catch(e){
+      if(e){
+        alert(e)
+        document.getElementById(`noticePrice-${a}`).innerHTML =`<strong>Notice:</strong>Ooops... there was an error while trying to give price for the product ${b} ID: ${a}`
+      }
+    }
+  })
+
+}
+
+// Stop Session & Calculate last price
+const Stop=async(a)=>{
+  $(`.btnStop-${a}`).on('click',async()=>{
+    try{   
+      var idBtn0 = await parseInt($(`.btnStop-${a}`).closest('tr').find("td:eq(2)").text())
+      await sesInstanceAr[idBtn0].methods.stopSession().send({from: currentAccount})
+      var status2 = await sesInstanceAr[idBtn0].methods.getStatusSession().call()
+      if(parseInt(status2) == 2){
+        document.getElementById(`status-${a}`).innerHTML = 'STOPPED'  
+        $notice.innerHTML =`<strong>Notice:</strong>The session ${sesInstanceAr[idBtn0]._address} is stopped successfully`
+      }
+      //Update number of sessions and deviation on participants table
+      var numPar = await mainInstance.methods.getTotalParNum().call()
+      for(let i=0 ;i<numPar;i++){
+        var result2= await mainInstance.methods.getProfileId(i).call()
+        document.getElementById(`numSesPar_${i}`).innerHTML = `${result2[5]}`
+        document.getElementById(`deviPar_${i}`).innerHTML = `${result2[4]}`
+      }
+      document.getElementById(`product-${a}`).style.display="none"
+    }catch(e){
+      if(e){
+        $notice.innerHTML =`<strong>Notice:</strong>Ooops... there was an error while trying to stop the session ${sesInstanceAr[idBtn0]._address}`
+      }
+    }
+  })
+}
+//Get Last Price result and close session
+const GetLastPriceResult = async(a)=>{
+  $(`.btnCal-${a}`).on('click', async()=>{
+    try{
+      var idBtn0 = parseInt($(`.btnCal-${a}`).closest('tr').find("td:eq(2)").text())  
+       await sesInstanceAr[idBtn0].methods.getPriceAndClose().send({from: currentAccount})
+       var lastP = await mainInstance.methods.getLastPrice(sesInstanceAr[idBtn0]._address).call()
+      document.getElementById(`LastP-${a}`).innerHTML =`${lastP}`
+
+      var status3 = await sesInstanceAr[idBtn0].methods.getStatusSession().call()
+      if(parseInt(status3) == 3){
+        document.getElementById(`status-${a}`).innerHTML = 'CLOSED' 
+        $notice.innerHTML = `<strong>Notice:</strong>The Last Price of session ${sesInstanceAr[idBtn0]._address} is<strong> ${lastP}</strong> USD` 
+      }
+    }catch(e){
+      if(e){
+        $notice.innerHTML =`<strong>Notice:</strong>Ooops... there was an error while trying to calculate last price of product`
+      }
+    }
+  })
+}
+
+document.addEventListener('DOMContentLoaded', async() => {
+ try{
+  await initWeb3()
+  await initContract();
+  await loadData()
+  await initApp(); 
+  await Edit()
+  await Start()
+
+ }catch(e){
+  console.log(e.message)
+ }
+});
+
