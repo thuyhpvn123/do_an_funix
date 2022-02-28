@@ -15,3 +15,11 @@
     height: responsive;
     margin-right: 10px;
 }
+div .img{
+    float:left;
+    
+}
+img{
+    width:150px;
+    height:150px;
+}
