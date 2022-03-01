@@ -103,10 +103,13 @@ contract Main {
         detailSession[_session].addr = _session;
         IParticipant storage currentPar = participants[msg.sender];
         Session storage currentSes = detailSession[_session];
-        
-        uint _numberMove = _price - currentSes.priceOfAPar[currentPar.participantID];
-       
+        if(currentSes.priceOfAPar[currentPar.participantID]<_price){
+        uint _numberMove = _price - currentSes.priceOfAPar[currentPar.participantID]; 
         currentSes.totalPrice += _numberMove *(100 - currentPar.deviation);
+        }else{
+        uint _numberMove = currentSes.priceOfAPar[currentPar.participantID] - _price;
+            currentSes.totalPrice -= _numberMove *(100 - currentPar.deviation);
+        }
         detailSession[_session].parPrices[msg.sender].push(_price);
          
         uint parPercent = 100 - currentPar.deviation ;
@@ -141,7 +144,7 @@ contract Main {
             Iparticipants[i].deviation =( Iparticipants[i].deviation * (Iparticipants[i].sessionNumber-1) + Iparticipants[i].deviationNew)/(Iparticipants[i].sessionNumber);
             participants[Iparticipants[i].addr].deviation = Iparticipants[i].deviation;//map to participants
         }
-        for(uint i=0;i<currentSes.participantsOfSes.length;i++){
+        for(uint i=0;i<=currentSes.participantsOfSes.length;i++){
             currentSes.givenPrices.push(currentSes.priceOfAPar[i]);
         }
         emit CloseSession(currentSes.lastPrice);

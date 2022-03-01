@@ -1,5 +1,5 @@
 pragma solidity ^0.8.0;
-
+// pragma experimental ABIEncoderV2
 // Interface of Main contract to call from Session contract
 contract Main {
     function addSession(address session) public {}
@@ -44,7 +44,8 @@ contract Session {
     State public state = State.CREATED;    
     address [] public participants;
     uint [] public givenPrices;
-    address[] public imageHashes;
+    string[] public imageHashes;
+    string public imageHash;
     constructor(address _mainContract,address _admin, string memory _itemName, string memory _description) public {
         // Get Main Contract instance
         mainContract = _mainContract;
@@ -67,11 +68,15 @@ contract Session {
     function getProductInfo() view public returns(uint,string memory,string memory ){
         return (item.itemID,item.itemName,item.description);
     }
-    function setHash(address _imageHash)  public onlyAdmin{
+    function setHash(string memory _imageHash)  public onlyAdmin{
+        imageHash =_imageHash;
         imageHashes.push(_imageHash);
 
     }
-    function getHash() public view returns(address [] memory ){
+    // function getImage() public view returns(string memory){
+    //     return imageHash;
+    // }
+    function getImages() public view returns(string [] memory ){
         return imageHashes;
     }
     function startSession() public inState(State.CREATED) onlyAdmin{
