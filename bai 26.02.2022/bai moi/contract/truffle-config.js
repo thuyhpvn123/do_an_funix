@@ -18,11 +18,18 @@
  *
  */
 
-// const HDWalletProvider = require('@truffle/hdwallet-provider');
-//
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 
+const fs = require('fs');
+const mnemonic = "balance hip rain congress pear egg tooth leopard farm sail broom snake";
+// require('babel-register')
+const infura_api_key="3a71b8f15309491091e2bb8ed9519a41"
+const private_keys = [
+  "f2531cdeefd2479087bc92c933027c0039d2b4b53939dc04c49fb2a8b22752f1",
+  "1ab9612e5b0e3187938f5e9023c10d68a36b96743c9ad16e6ad9a7c1da9d3a4b",
+  "e05f8a116bb6b55bf18860902a08fd3584c5a3938be52e2995d5557cbaf3f501",
+  "f4ca5311ce48d6375a6be5d9c79c95a5ca0718d8b42d18521b047cdec9c3a5b8"
+]
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -41,11 +48,11 @@ module.exports = {
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
     //
-    // development: {
-    //  host: "127.0.0.1",     // Localhost (default: none)
-    //  port: 8545,            // Standard Ethereum port (default: none)
-    //  network_id: "*",       // Any network (default: none)
-    // },
+    development: {
+     host: "127.0.0.1",     // Localhost (default: none)
+     port: 7545,            // Standard Ethereum port (default: none)
+     network_id: "*",       // Any network (default: none)
+    },
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port
@@ -58,12 +65,16 @@ module.exports = {
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
     // ropsten: {
-    // provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/YOUR-PROJECT-ID`),
+    // provider: () => new HDWalletProvider({
+    //   privateKeys: private_keys,
+    //   providerURL:`https://rinkeby.infura.io/v3/f394e5e63f5b4bf799688a41bdeb5727`,
+    //   numberOfAddresses: 3
+    // }),
     // network_id: 3,       // Ropsten's id
     // gas: 5500000,        // Ropsten has a lower block limit than mainnet
-    // confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-    // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-    // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    // // confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+    // // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+    // // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     // },
     // Useful for private networks
     // private: {
@@ -71,6 +82,15 @@ module.exports = {
     // network_id: 2111,   // This network is yours, in the cloud.
     // production: true    // Treats this network as if it was a public net. (default: false)
     // }
+    // rinkeby: {
+    //   provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/f394e5e63f5b4bf799688a41bdeb5727`),
+    //   network_id: 4 ,       // Ropsten's id
+    //   gas: 5500000,        // Ropsten has a lower block limit than mainnet
+    //   // confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+    //   // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+    //   // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    //   },
+  
   },
 
   // Set default mocha options here, use special reporters etc.

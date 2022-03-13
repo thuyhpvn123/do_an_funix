@@ -23,13 +23,13 @@ contract Main {
         uint totalPercent;
         uint proposedPrice ;
         uint lastPrice;
-        address [] participantsOfSes;
+        uint [] participantsOfSes; // id of all participants join session
         mapping(uint =>uint) priceOfAPar; // map from ID of participant to their latest price
         mapping(address => uint []) parPrices;
         uint [] givenPrices;
         uint status; //  State{ CREATED, STARTED, STOPPED, CLOSED }
     }
-    mapping (address=>Session) detailSession;
+    mapping (address=>Session) public detailSession;
     address [] public sessions; 
     uint public count = 0;
     
@@ -52,10 +52,10 @@ contract Main {
         sessions.push(_session);
         // TODO
     }
-    function getSessions() public view returns(address [] memory, uint){
+    function getSessions() public returns(address [] memory, uint){
         return (sessions,sessions.length);
     }
-    function getSessionNum() public view returns(uint){
+    function getSessionNum() public returns(uint){
         return sessions.length;
     }
 
@@ -115,16 +115,18 @@ contract Main {
         uint parPercent = 100 - currentPar.deviation ;
         if(currentSes.parPrices[msg.sender].length==1){
             currentSes.totalPercent += parPercent;
-            currentPar.sessionNumber++;
-            Iparticipants[currentPar.participantID].sessionNumber = currentPar.sessionNumber;//map to Iparticipants
-            currentSes.participantsOfSes.push(msg.sender);
+            currentSes.participantsOfSes.push(participants[msg.sender].participantID);
+            
+            // currentPar.sessionNumber++;
+            // Iparticipants[currentPar.participantID].sessionNumber = currentPar.sessionNumber;//map to Iparticipants
+
         }
         currentSes.proposedPrice = currentSes.totalPrice/currentSes.totalPercent;
         currentSes.priceOfAPar[currentPar.participantID] = _price;
         //count all given prices
         emit ProposedPrice(currentSes.proposedPrice);
     }
-    function getProposedPrice(address _session)public returns(uint){
+    function getProposedPrice(address _session)public  returns(uint){
         return (detailSession[_session].proposedPrice);
     }
     function calculateLastPrice(address _session)public {
@@ -132,51 +134,63 @@ contract Main {
         Session storage currentSes = detailSession[_session];
         currentSes.lastPrice = currentSes.proposedPrice;
         uint lastP = currentSes.lastPrice ;
-        for (uint i=0; i<count;i++){
-            if((lastP>=currentSes.priceOfAPar[i])){
-                Iparticipants[i].deviationNew =(lastP - currentSes.priceOfAPar[i])* 100/lastP  ;
-            }else{
-                Iparticipants[i].deviationNew =(currentSes.priceOfAPar[i]- lastP)* 100 /lastP ;
+         
+        if(lastP >0 ){
+            //increase session number of participants
+            for(uint i=0; i<currentSes.participantsOfSes.length;i++){
+               Iparticipants[currentSes.participantsOfSes[i]].sessionNumber++;
+                participants[Iparticipants[currentSes.participantsOfSes[i]].addr].sessionNumber = Iparticipants[currentSes.participantsOfSes[i]].sessionNumber;  //map to Iparticipants
+
             }
-            participants[Iparticipants[i].addr].deviationNew = Iparticipants[i].deviationNew; //map to participants
-        }
-        for(uint i; i<count;i++){
-            Iparticipants[i].deviation =( Iparticipants[i].deviation * (Iparticipants[i].sessionNumber-1) + Iparticipants[i].deviationNew)/(Iparticipants[i].sessionNumber);
-            participants[Iparticipants[i].addr].deviation = Iparticipants[i].deviation;//map to participants
-        }
-        for(uint i=0;i<=currentSes.participantsOfSes.length;i++){
-            currentSes.givenPrices.push(currentSes.priceOfAPar[i]);
+            //calculate deviationNew of participants who joined the session
+            for (uint i=0; i<currentSes.participantsOfSes.length;i++){
+                if(lastP>=currentSes.priceOfAPar[currentSes.participantsOfSes[i]]){
+                    Iparticipants[currentSes.participantsOfSes[i]].deviationNew =(lastP - currentSes.priceOfAPar[currentSes.participantsOfSes[i]])* 100/lastP  ;
+                }else{
+                    Iparticipants[currentSes.participantsOfSes[i]].deviationNew =(currentSes.priceOfAPar[currentSes.participantsOfSes[i]]- lastP)* 100 /lastP ;
+                }
+                participants[Iparticipants[currentSes.participantsOfSes[i]].addr].deviationNew = Iparticipants[currentSes.participantsOfSes[i]].deviationNew; //map to participants
+            }
+            //update accumulated deviation of participants who joined the session
+            for(uint i; i<currentSes.participantsOfSes.length;i++){
+                Iparticipants[currentSes.participantsOfSes[i]].deviation =( Iparticipants[currentSes.participantsOfSes[i]].deviation * (Iparticipants[currentSes.participantsOfSes[i]].sessionNumber-1) + Iparticipants[currentSes.participantsOfSes[i]].deviationNew)/(Iparticipants[currentSes.participantsOfSes[i]].sessionNumber);
+                participants[Iparticipants[currentSes.participantsOfSes[i]].addr].deviation = Iparticipants[currentSes.participantsOfSes[i]].deviation;//map to participants
+            }
+            //update all prices were given for the session
+            for(uint i=0;i<currentSes.participantsOfSes.length;i++){
+                currentSes.givenPrices.push(currentSes.priceOfAPar[currentSes.participantsOfSes[i]]);
+            }
         }
         emit CloseSession(currentSes.lastPrice);
         
         
     }
-    function getLastPrice(address _session) public returns(uint){
+    function getLastPrice(address _session) public  returns(uint){
         require(detailSession[_session].status==3,'Invalid State');
         return (detailSession[_session].lastPrice);
     }
-    function getListOfPar(address _session) public  returns(address [] memory){
-        require(detailSession[_session].status==1,'Invalid State');
+    function getListOfPar(address _session) public  returns(uint [] memory){
+        // require(detailSession[_session].status==1,'Invalid State');
         return(detailSession[_session].participantsOfSes);
     }
     function getGivenPrices(address _session) public  returns(uint [] memory){
-        require(detailSession[_session].status==3,'Invalid State');
+        // require(detailSession[_session].status==3,'Invalid State');
         return(detailSession[_session].givenPrices);
     }
-    function getProfileId(uint _id) view public returns(uint ,address,string memory,string memory,uint,uint){
+    function getProfileId(uint _id)  public returns(uint ,address,string memory,string memory,uint,uint){
         // require(msg.sender== admin || msg.sender == Iparticipants[_id].addr,"Only admin or the owner of account call this");
         return(Iparticipants[_id].participantID,Iparticipants[_id].addr,Iparticipants[_id].name,Iparticipants[_id].email,Iparticipants[_id].deviation,Iparticipants[_id].sessionNumber);
     }
-    function getProfileAdd(address _addr) view public returns(uint ,address,string memory,string memory,uint,uint){
+    function getProfileAdd(address _addr) public returns(uint ,address,string memory,string memory,uint,uint){
     // require(msg.sender== admin || msg.sender == Iparticipants[_id].addr,"Only admin or the owner of account call this");
         return(participants[_addr].participantID,participants[_addr].addr,participants[_addr].name,participants[_addr].email,participants[_addr].deviation,participants[_addr].sessionNumber);
     }
 
-    function getTotalParNum() public view returns(uint){
+    function getTotalParNum() public returns(uint){
         return count;
     }
 
-    function getStatusSession(address _session) public onlyAdmin returns(uint){
+    function getStatusSession(address _session) public returns(uint){
         return detailSession[_session].status;
     }
     

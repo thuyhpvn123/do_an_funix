@@ -1,7 +1,8 @@
 pragma solidity ^0.8.0;
-// pragma experimental ABIEncoderV2
+
+// SPDX-License-Identifier: GPL-3.0
 // Interface of Main contract to call from Session contract
-contract Main {
+contract IMain {
     function addSession(address session) public {}
     function getSessions() public view returns(address [] memory, uint){}
     function getSessionNum() public view returns(uint){}
@@ -26,7 +27,7 @@ contract Session {
     // Variable to hold Main Contract Address when create new Session Contract
     address public mainContract;
     // Variable to hold Main Contract instance to call functions from Main
-    Main MainContract;
+    IMain MainContract;
 
     // TODO: Variables
      
@@ -46,26 +47,27 @@ contract Session {
     uint [] public givenPrices;
     string[] public imageHashes;
     string public imageHash;
-    constructor(address _mainContract,address _admin, string memory _itemName, string memory _description) public {
+
+    constructor(address _mainContract, string memory _itemName, string memory _description) public {
         // Get Main Contract instance
         mainContract = _mainContract;
-        MainContract = Main(_mainContract);
+        MainContract = IMain(_mainContract);
                 // item.itemID = _itemID;
         item.itemID = MainContract.getSessionNum();
         item.itemName = _itemName;
         item.description = _description;
-        admin =_admin;
+        // admin =_admin;
         // TODO: Init Session contract
         
-        
+        admin = MainContract.getAdminInfo();
         // Call Main Contract function to link current contract.
         MainContract.addSession(address(this));
         
     }
-    function setIdSession() public{
-        item.itemID = MainContract.getSessionNum();
-    }
-    function getProductInfo() view public returns(uint,string memory,string memory ){
+    // function setIdSession() public onlyAdmin{
+    //     item.itemID = MainContract.getSessionNum();
+    // }
+    function getProductInfo() public  returns(uint,string memory,string memory ){
         return (item.itemID,item.itemName,item.description);
     }
     function setHash(string memory _imageHash)  public onlyAdmin{
@@ -76,7 +78,7 @@ contract Session {
     // function getImage() public view returns(string memory){
     //     return imageHash;
     // }
-    function getImages() public view returns(string [] memory ){
+    function getImages() public view  returns(string [] memory ){
         return imageHashes;
     }
     function startSession() public inState(State.CREATED) onlyAdmin{
@@ -111,14 +113,14 @@ contract Session {
         lastPrice= MainContract.getLastPrice(address(this));
         return lastPrice;
     }
-    function getListOfPar()public onlyAdmin returns(address[] memory){
+    function getListOfPar()public returns(address[] memory){
         participants= MainContract.getListOfPar(address(this));
         return participants;
     }
     function getGivenPrices()public onlyAdmin{
         givenPrices = MainContract.getGivenPrices(address(this));
     }
-    function getStatusSession()public view returns(State){
+    function getStatusSession()public returns(State ){
         return state;
     } 
     modifier onlyAdmin(){
