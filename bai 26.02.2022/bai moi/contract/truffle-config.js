@@ -25,10 +25,7 @@ const mnemonic = "balance hip rain congress pear egg tooth leopard farm sail bro
 // require('babel-register')
 const infura_api_key="3a71b8f15309491091e2bb8ed9519a41"
 const private_keys = [
-  "f2531cdeefd2479087bc92c933027c0039d2b4b53939dc04c49fb2a8b22752f1",
-  "1ab9612e5b0e3187938f5e9023c10d68a36b96743c9ad16e6ad9a7c1da9d3a4b",
-  "e05f8a116bb6b55bf18860902a08fd3584c5a3938be52e2995d5557cbaf3f501",
-  "f4ca5311ce48d6375a6be5d9c79c95a5ca0718d8b42d18521b047cdec9c3a5b8"
+  
 ]
 module.exports = {
   /**
